@@ -1,35 +1,43 @@
-def danceMoves( time ):
+from gopigo import * # has basic robot control fucntions
+import sys #used for clsing the running program
+from random import Random
+def main():
    timer = Timer()
    random = Random()
-   while(timer.get_time_ss<20):
-   	motorDanceMoves()
-
-   stop()
-   return [expression]
-def motorDanceMoves():
-	lmot = rndMotor.randint(0, 1)
-   	rmot = rndMotor.randint(0, 1)
-   	steps = rndSteps.randint(0,18)
+   while(True):
+        print "I'm looping"
+        motorDanceMoves(random)
+        sensorDanceMoves()
+def motorDanceMoves(rnd):
+        print "Start Motor Moves"
+        lmot = rnd.randint(0, 1)
+   	rmot = rnd.randint(0, 1)
+   	steps = rnd.randint(0,9)
    	left_rot()
    	enc_tgt(lmot,rmot,steps)
-   	time.sleep(90)
+   	time.sleep(1)
    	stop()
    	bwd()
-   	lmot = rndMotor.randint(0, 1)
-   	rmot = rndMotor.randint(0, 1)
-   	steps = rndSteps.randint(0,18)
+        fwd()
+   	lmot = rnd.randint(0, 1)
+   	rmot = rnd.randint(0, 1)
+   	steps = rnd.randint(0,9)
    	right_rot()
    	enc_tgt(lmot,rmot,steps)
-   	time.sleep(90)
+   	time.sleep(1)
    	stop()
    	fwd()
+        bwd()
+        print "stop motor moves"
 def sensorDanceMoves():
-   for i in range(180):
+    print "start sensor moves"
+    for i in range(0,30,90):
    	servo(i)
-   	time.sleep(10)
-   for i in range(180):
-   	servo(180-i)
-   	time.sleep(10)
+   	time.sleep(1)
+    for i in range(0,30,90):
+   	servo(90-i)
+   	time.sleep(1)
+    print "stop sensor moves"
 class Timer:
   def __init__(self):
     self.start = time.time()
@@ -46,3 +54,11 @@ class Timer:
 
   def get_time_ss(self):
     return time.time()
+if __name__ == '__main__':
+    print "getting started"
+    main()
+    print "we're done"
+    stop()
+    sys.exit()
+
+
