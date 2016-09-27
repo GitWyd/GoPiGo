@@ -11,14 +11,14 @@ Question 3: Done
 Question 4: Done. 
 The sensor accuracy is
 
-Sr No | Distance Set | Observed Distance
+Sr No 	|	Distance Set	|	Observed Distance
 
-   1		5					5
+   1			5						5
 
-   2	   30				   38
+   2	   		30				   		38
 
-   3	   60                  76 
-   
+   3	  		60                  	76 
+
 The observed error was in the general range of 26.7% which is useful for calculations in the next problem
 
 Question 5 - Done. 
