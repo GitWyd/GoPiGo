@@ -3,8 +3,8 @@
 '''
 import numpy as np
 ROBOT = [0,0,0]  #robot vector  [x,y,theta]
-SERVODISTANCE = 10 
-SENSORARM = 2
+SERVODISTANCE = 7 
+SENSORARM = 3
 
 # function transforms Pr from the robot Frame to Pw in the world frame
 # assumes coordinate format [x,y,phi]
