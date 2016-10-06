@@ -2,7 +2,7 @@ from gopigo import *
 import math                                       
 import time                                       
 import follow_obstacle as follow_obstacle   
-import GoPiGoModel as GoPiGo
+import GoPiGoModel as Model
 
 US_MAX_DIST = 300                           
 US_PIN = 15                                       
@@ -22,6 +22,8 @@ TARGET_Y = 5
 
 SOURCE_X = 0
 SOURCE_Y = 0
+SLOPE_TO_TARGET = 0
+INTERCEPT = 0
 
 STEPS_TO_MOVE = 1
 #1 Align the robot to the target
@@ -32,14 +34,13 @@ STEPS_TO_MOVE = 1
 	# if m-line check if distance is less than previously calculated
 	# else continue
 #4.2 else 3
-def align_robot_to_target(source_x, source_y, target_x, target_y):
+def align_robot_to_target():
 	# Angle to target
-	angle = angle_to_target(source_x, source_y, target_x, target_y)
-	rotate_to_degrees(DIRECTION, angle_to_target)
-	DISTANCE_TO_TARGET = get_distance_to_target(source_x, source_y, target_x, target_y)
+	rotate_to_degrees(angle_to_target())
+	DISTANCE_TO_TARGET = get_distance_to_target()
 
 def angle_to_target():
-	return math.degrees(math.atan((target_y - source_y)/(target_x - source_x)))
+	return math.degrees(math.atan((TARGET_Y - SOURCE_Y)/(TARGET_X - SOURCE_X)))
 
 def rotate_to_degrees(angle):
 	pulse = int(math.abs(90 - angle)/DPR)
@@ -49,14 +50,16 @@ def rotate_to_degrees(angle):
 	else:
 		left_rot()
 
-def get_distance_to_target(source_x, source_y, target_x, target_y):
-	return math.pow((target_y - source_y),2) + math.pow((target_x - source_x),2)
+def get_distance_to_target():
+	return math.pow((TARGET_Y - SOURCE_Y),2) + math.pow((TARGET_X - SOURCE_X),2)
 
-def get_slope_to_target(source_x, source_y, target_x, target_y):
-	return math.abs((target_y - source_y)/(target_x - source_x))
+def get_slope_to_target():
+	SLOPE_TO_TARGET = math.abs((TARGET_Y - SOURCE_Y)/(TARGET_X - SOURCE_X))
+	return SLOPE_TO_TARGET
 
-def get_intercept(slope, target_x, target_y):
-	return target_y - slope * target_x
+def get_intercept():
+	INTERCEPT = TARGET_Y - SLOPE_TO_TARGET * TARGET_X
+	return INTERCEPT
 
 def follow_line():
     while(TARGET_NOT_FOUND):
@@ -78,6 +81,6 @@ def cm2pulse(distance):
 
 if __name__=='__main__': 
     enable_servo()
-    align_robot_to_target(SOURCE_X, SOURCE_Y, TARGET_X, TARGET_Y)
+    align_robot_to_target()
     follow_line()
     stop()
