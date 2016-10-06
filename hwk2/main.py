@@ -8,7 +8,7 @@ DIST_OBTACLE = 10
 US_MAX_DIST = 300                           
 US_PIN = 15                                       
 ROTATE_SPEED = 50
-DRIVE_SPEED = 80
+DRIVE_SPEED = 100
 TIME_INCREMENTS = 0.20
 WHEEL_CIRCUMFERENCE = 20.4                        
 ENCODER_PPR = 18 # Pulses Per Revolution          
@@ -64,15 +64,19 @@ def get_intercept():
 	return INTERCEPT
 
 def follow_line():
+	print "Getting world location"
     coords = follow_obstacle.get_robot_worl_location
+    print "Co-ordinates" + str(coords)
 	if(coords[0] == TARGET_X and coords[1] == TARGET_Y):
 		print "Did we really do this. We actuallly found the target"
 		TARGET_FOUND = True
 		break
     elif follow_obstacle.distance_to_obstacle() <= DIST_OBTACLE: :
+    	print "Calling anshuman's code for obstacle follow"
     	stop()
 		follow_obstacle.initial_setup()
     else:
+    	print "Moving forward reaaaalllllly slowly"
     	go_forward(STEPS_TO_MOVE)
     	time.sleep(0.2)
 
@@ -90,5 +94,8 @@ def cm2pulse(distance):
 if __name__=='__main__': 
     enable_servo()
     align_robot_to_target()
+
+    print "Found target alignment. Lets go"
     while not TARGET_FOUND:
+    	print "Target still not found"
     	follow_line()
