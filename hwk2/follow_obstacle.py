@@ -1,5 +1,5 @@
 from gopigo import *
-import GoPiGoModel
+import GoPiGoModel as model
 import operator
 import main as helper
 
@@ -14,11 +14,20 @@ SLOPE = helper.get_slope_to_target()
 MLINE_COEFF = helper.get_intercept()
 MLINE_CROSSER = False 
 
+locationHistory = []
+obstacleHistory = []
+servoAngle = 90
 def get_robot_world_location():
-	// Retrieve something stored here
-
-def store_robot_world_location():
-	// Store something here
+	return locationHistory-1
+# stores the location of the robot with respect
+# to the world coordinate frame in the location history
+def store_robot_world_location(newRobotLocation):
+	locationHistory.append(newRobotLocation)
+# stores the location of an object measured by the location
+# of the robot and the lection of an object with respect to it 
+def store_obstacle_location():
+	obstacleCoordinate = model.us2world(locationHistory-1, distance_to_obstacle(), servoAngle)	
+	obstacleHistory.append(obstacleCoordinate)
 
 def distance_to_obstacle():
 	return us_dist(US_SENSOR_PORT)
