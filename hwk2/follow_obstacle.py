@@ -18,7 +18,7 @@ locationHistory = []
 obstacleHistory = []
 servoAngle = 90
 def get_robot_world_location():
-	return locationHistory-1
+	return locationHistory[-1]
 # stores the location of the robot with respect
 # to the world coordinate frame in the location history
 def store_robot_world_location(newRobotLocation):
@@ -26,7 +26,7 @@ def store_robot_world_location(newRobotLocation):
 # stores the location of an object measured by the location
 # of the robot and the lection of an object with respect to it 
 def store_obstacle_location():
-	obstacleCoordinate = model.us2world(locationHistory-1, distance_to_obstacle(), servoAngle)	
+	obstacleCoordinate = model.us2world(get_robot_world_location(), distance_to_obstacle(), servoAngle)	
 	obstacleHistory.append(obstacleCoordinate)
 
 def distance_to_obstacle():
@@ -35,8 +35,8 @@ def distance_to_obstacle():
 def follow_obstacle():
 	store_obstacle_location()
 	if distance_to_obstacle() < DIST_OBSTACLE:
-		break
-	angle_to_rotate_to = rotate_clockwise()
+                return
+        angle_to_rotate_to = rotate_clockwise()
 	servo(0)
 	SERVO_ANGLE = 0
 	rotate_to_degrees(angle_to_rotate_to)
@@ -88,9 +88,9 @@ def is_point_on_m_line():
 	wanted_y = SLOPE * robot_x + MLINE_COEFF
 	if wanted_y - robot_y == 0:
 		return True
-	else if wanted_y > robot_y and MLINE_CROSSER:
+	elif wanted_y > robot_y and MLINE_CROSSER:
 		return True
-	else if wanted_y < robot_y and not MLINE_CROSSER:
+	elif wanted_y < robot_y and not MLINE_CROSSER:
 		return True
 	return False
 
@@ -100,7 +100,8 @@ def set_m_line():
 	m_line_y  = (robot_x - MLINE_COEFF)/SLOPE
 	if m_line_y > robot_y:
 		MLINE_CROSSER = False
-	else MLINE_CROSSER = True
+        else:
+                MLINE_CROSSER = True
 		
 def intial_setup():
 	enable_servo()
