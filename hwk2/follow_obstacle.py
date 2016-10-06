@@ -1,6 +1,8 @@
 from gopigo import *
+import GoPiGoModel
 import operator
 import main as helper
+
 US_SENSOR_PORT = 15
 STEP_SIZE = 0.2
 DIST_OBTACLE = 10

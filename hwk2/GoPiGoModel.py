@@ -39,10 +39,12 @@ def getrHus(phi):
 	return rHus
 
 def main():
+	# how to use robot2world(PointInRobotCoordinateFrame, Origin of Robot Coordinate Frame)
 	Pr = [3,0,1]
 	theta = np.pi
 	Orobot = [3,3,theta]
 	print(robot2world(Pr, Orobot))
+	# how to use us2world(PointInUSCoordinateFrame, Origin of Robot Coordinate Frame)
 	distUS = 10
 	phi = 0
 	print(us2world(Orobot, distUS, phi))
