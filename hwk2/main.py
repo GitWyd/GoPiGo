@@ -1,7 +1,9 @@
 from gopigo import *                              
 import math                                       
 import time                                       
-import follow_obstacle as follow_obstacle                                                  
+import follow_obstacle as follow_obstacle   
+import GoPiGoModel as GoPiGo
+
 US_MAX_DIST = 300                           
 US_PIN = 15                                       
 ROTATE_SPEED = 50
@@ -40,18 +42,22 @@ def angle_to_target():
 	return math.degrees(math.atan((target_y - source_y)/(target_x - source_x)))
 
 def rotate_to_degrees(angle):
+	pulse = int(math.abs(90 - angle)/DPR)
+	enc_tgt(1,1,pulse)
 	if angle <= 90:
-		pulse = int(90 - angle/DPR)
-		enc_tgt(1,1,pulse)
 		right_rot()
 	else:
-		pulse = int((angle - 90)/DPR)
-		enc_tgt(1, 1, pulse)
 		left_rot()
 
 def get_distance_to_target(source_x, source_y, target_x, target_y):
+	return math.pow((target_y - source_y),2) + math.pow((target_x - source_x),2)
+
+def get_slope_to_target(source_x, source_y, target_x, target_y):
 	return math.abs((target_y - source_y)/(target_x - source_x))
-	
+
+def get_intercept(slope, target_x, target_y):
+	return target_y - slope * target_x
+
 def follow_line():
     while(TARGET_NOT_FOUND):
 	    if isObstacle():
