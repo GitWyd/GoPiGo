@@ -1,5 +1,8 @@
 from gopigo import *
 import GoPiGoModel
+import operator
+import main as helper
+
 US_SENSOR_PORT = 15
 STEP_SIZE = 0.2
 DIST_OBTACLE = 10
@@ -23,7 +26,7 @@ def follow_obstacle():
 		break
 	angle_to_rotate_to = rotate_clockwise()
 	servo(0)
-	rotate_to_degree(angle_to_rotate_to)
+	rotate_to_degrees(angle_to_rotate_to)
 	move_obstacle_periphery()
 
 def move_obstacle_periphery():
@@ -37,22 +40,12 @@ def move_obstacle_periphery():
 		    	tilt_away_from_object()	
 		ROBOT_FIRST_MOVE = False;
 
-def rotate_to_degrees(angle):
-	if angle <= 90:
-		pulse = int(90 - angle/DPR)
-		enc_tgt(1,1,pulse)
-		right_rot()
-	else:										               pulse = int((angle - 90)/DPR)
-		enc_tgt(1, 1, pulse) 
-		left_rot()
-
 def rotate_clockwise():
-/* Rotate till the distance from the intial recorded is different*/
+# Rotate till the distance from the intial recorded is different
 	obstacle_distance = distance_to_obstacle() 
-	while eq obstacle_ditance distance_to_obstacle():
-		for i in range(10,90,10)
-		servo(90 + i)
-	
+	while obstacle_distance == distance_to_obstacle():
+		for i in range(10,90,10):
+			servo(90 + i)
 	return 90 + i
 
 def go_forward(distance):
@@ -67,12 +60,12 @@ def cm2pulse(distance):
 	return encoder_counts
 
 def tilt_closer_to_object(cms):
-	rotate_right(80);
-	move_forward(cms if not None else STEP_SIZE);
+	helper.rotate_to_degrees(80);
+	go_forward(cms if not None else STEP_SIZE);
     
 def tilt_away_from_object(cms):
-	rotate_left(100);
-	move_forward(cms if not None else STEP_SIZE);
+	helper.rotate_to_degrees(100);
+	go_forward(cms if not None else STEP_SIZE);
 
 def intial_setup():
 	enable_servo()
