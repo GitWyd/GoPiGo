@@ -1,7 +1,7 @@
 from gopigo import *                              
 import math                                       
 import time                                       
-                                                  
+import follow_obstacle as follow_obstacle                                                  
 US_MAX_DIST = 300                           
 US_PIN = 15                                       
 ROTATE_SPEED = 50
@@ -53,7 +53,6 @@ def get_distance_to_target(source_x, source_y, target_x, target_y):
 	return math.abs((target_y - source_y)/(target_x - source_x))
 	
 def follow_line():
-	
     while(TARGET_NOT_FOUND):
 	    if isObstacle():
 	    	follow_obstacle()

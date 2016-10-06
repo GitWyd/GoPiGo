@@ -4,6 +4,9 @@ US_SENSOR_PORT = 15
 STEP_SIZE = 0.2
 DIST_OBTACLE = 10
 ROBOT_FIRST_MOVE = True
+WHEEL_CIRCUMFERENCE = 20.4
+ENCODER_PPR = 18 # Pulses Per Revolution
+STEPS_TO_MOVE = 1
 
 def get_robot_world_location():
 	// Retrieve something stored here
@@ -18,49 +21,63 @@ def follow_obstacle():
 	store_obstacle_location()
 	if distance_to_obstacle() < DIST_OBSTACLE:
 		break
-	rotate_clockwise()
+	angle_to_rotate_to = rotate_clockwise()
 	servo(0)
+	rotate_to_degree(angle_to_rotate_to)
 	move_obstacle_periphery()
 
 def move_obstacle_periphery():
     	while True:
-	    	move_forward(STEP_SIZE)
+	    	go_forward(STEP_SIZE)
 	    	if is_point_on_mline() and not ROBOT_FIRST_MOVE:
 		    	break	
 	    	if distance_to_obstacle() < DIST_OBSTACLE:
-		    	move_closer_to_object()
+		    	tilt_closer_to_object()
 	    	else: 
-		    	move_away_from_object()	
+		    	tilt_away_from_object()	
 		ROBOT_FIRST_MOVE = False;
-		
+
+def rotate_to_degrees(angle):
+	if angle <= 90:
+		pulse = int(90 - angle/DPR)
+		enc_tgt(1,1,pulse)
+		right_rot()
+	else:										               pulse = int((angle - 90)/DPR)
+		enc_tgt(1, 1, pulse) 
+		left_rot()
 
 def rotate_clockwise():
-/*Rotate till the distance from the intial recorded is different*/
-
-def rotate_counter_clockwise():
 /* Rotate till the distance from the intial recorded is different*/
+	obstacle_distance = distance_to_obstacle() 
+	while eq obstacle_ditance distance_to_obstacle():
+		for i in range(10,90,10)
+		servo(90 + i)
+	
+	return 90 + i
 
-def rotate_left(degrees):
-/* Rotate counter clockwise by the specified amount of degrees*/
+def go_forward(distance):
+	set_speed(SPEED)
+	pulse = cm2pulse(STEPS_TO_MOVE)
+	enc_tgt(1,1,pulse)
+	fwd()
 
-def rotate_right(degrees):
-/* Rotate clockwise by the specified amount of degrees */
+def cm2pulse(distance):
+	distToWheelRatio = float(abs(distance) / WHEEL_CIRCUMFERENCE)
+	encoder_counts = int(distToWheelRatio*ENCODER_PPR)
+	return encoder_counts
 
-def move_forward(cms):
-
-def move_backward(cms):
-
-def move_closer_to_object(cms):
-	rotate_right(90);
+def tilt_closer_to_object(cms):
+	rotate_right(80);
 	move_forward(cms if not None else STEP_SIZE);
     
-def move_away_from_object(cms):
-	rotate_left(90);
+def tilt_away_from_object(cms):
+	rotate_left(100);
 	move_forward(cms if not None else STEP_SIZE);
 
-if __name__=='__main__': 
-    	enable_servo()
+def intial_setup():
+	enable_servo()
 	time.sleep(2)	
 	servo(90)
+	follow_obstacle()
     	stop()
 
