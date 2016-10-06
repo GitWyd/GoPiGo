@@ -38,14 +38,14 @@ STEPS_TO_MOVE = 1
 #4.2 else 3
 def align_robot_to_target():
 	# Angle to target
-	rotate_to_degrees(angle_to_target())
+	rotate_to_degrees(angle_to_target() + 90)
 	DISTANCE_TO_TARGET = get_distance_to_target()
 
 def angle_to_target():
 	return math.degrees(math.atan((TARGET_Y - SOURCE_Y)/(TARGET_X - SOURCE_X)))
 
 def rotate_to_degrees(angle):
-	pulse = int(math.abs(90 - angle)/DPR)
+	pulse = int(math.abs(angle - 90/DPR))
 	enc_tgt(1,1,pulse)
 	if angle <= 90:
 		right_rot()
