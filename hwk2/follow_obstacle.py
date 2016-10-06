@@ -7,6 +7,10 @@ ROBOT_FIRST_MOVE = True
 WHEEL_CIRCUMFERENCE = 20.4
 ENCODER_PPR = 18 # Pulses Per Revolution
 STEPS_TO_MOVE = 1
+GOAL = [5,3,1]
+SLOPE = 1
+MLINE_COEFF = 4
+MLINE_CROSSER = False 
 
 def get_robot_world_location():
 	// Retrieve something stored here
@@ -52,7 +56,6 @@ def rotate_clockwise():
 	while eq obstacle_ditance distance_to_obstacle():
 		for i in range(10,90,10)
 		servo(90 + i)
-	
 	return 90 + i
 
 def go_forward(distance):
@@ -74,10 +77,32 @@ def tilt_away_from_object(cms):
 	rotate_left(100);
 	move_forward(cms if not None else STEP_SIZE);
 
+def is_point_on_m_line(robot_location):
+	robot_x = robot_location[0]
+	robot_y = robot_location[1]
+	wanted_y = SLOPE * robot_x + MLINE_COEFF
+	if wanted_y - robot_y == 0:
+		return True
+	else if wanted_y > robot_y and MLINE_CROSSER:
+		return True
+	else if wanted_y < robot_y and not MLINE_CROSSER:
+		return True
+	return False
+
+def set_m_line():
+	robot_location = get_robot_location()
+	robot_x = robot_location[0]
+	m_line_y  = (robot_x - MLINE_COEFF)/SLOPE
+	if m_line_y > robot_y:
+		MLINE_CROSSER = False
+	else MLINE_CROSSER = True
+		
+
 def intial_setup():
 	enable_servo()
 	time.sleep(2)	
 	servo(90)
 	follow_obstacle()
+	set_m_line()
     	stop()
 
