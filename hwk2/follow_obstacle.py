@@ -1,5 +1,5 @@
 from gopigo import *
-
+import GoPiGoModel
 US_SENSOR_PORT = 15
 STEP_SIZE = 0.2
 DIST_OBTACLE = 10

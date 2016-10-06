@@ -13,7 +13,7 @@ ENCODER_PPR = 18 # Pulses Per Revolution
 DISTANCE_TO_TARGET = 300
 DIRECTION = True #True = Left, False = right      
 APPROACHING_DIST = 22   
-DPR = 360.0/64
+DPR = 360.0/64 # Degrees Per Revoluation
 
 TARGET_X = 4
 TARGET_Y = 5
