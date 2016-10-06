@@ -4,6 +4,7 @@ import time
 import follow_obstacle as follow_obstacle   
 import GoPiGoModel as Model
 
+DIST_OBTACLE = 10
 US_MAX_DIST = 300                           
 US_PIN = 15                                       
 ROTATE_SPEED = 50
@@ -12,7 +13,7 @@ TIME_INCREMENTS = 0.20
 WHEEL_CIRCUMFERENCE = 20.4                        
 ENCODER_PPR = 18 # Pulses Per Revolution          
 
-DISTANCE_TO_TARGET = 300
+DISTANCE_TO_TARGET = 0
 DIRECTION = True #True = Left, False = right      
 APPROACHING_DIST = 22   
 DPR = 360.0/64 # Degrees Per Revoluation
@@ -24,6 +25,7 @@ SOURCE_X = 0
 SOURCE_Y = 0
 SLOPE_TO_TARGET = 0
 INTERCEPT = 0
+TARGET_FOUND = False
 
 STEPS_TO_MOVE = 1
 #1 Align the robot to the target
@@ -62,11 +64,17 @@ def get_intercept():
 	return INTERCEPT
 
 def follow_line():
-    while(TARGET_NOT_FOUND):
-	    if isObstacle():
-	    	follow_obstacle()
-	    else:
-	    	go_forward(STEPS_TO_MOVE)
+    coords = follow_obstacle.get_robot_worl_location
+	if(coords[0] == TARGET_X and coords[1] == TARGET_Y):
+		print "Did we really do this. We actuallly found the target"
+		TARGET_FOUND = True
+		break
+    elif follow_obstacle.distance_to_obstacle() <= DIST_OBTACLE: :
+    	stop()
+		follow_obstacle.initial_setup()
+    else:
+    	go_forward(STEPS_TO_MOVE)
+    	time.sleep(0.2)
 
 def go_forward(distance):
 	set_speed(SPEED)
@@ -82,5 +90,5 @@ def cm2pulse(distance):
 if __name__=='__main__': 
     enable_servo()
     align_robot_to_target()
-    follow_obstacle.initial_setup()
-    stop()
+    while not TARGET_FOUND:
+    	follow_line()
