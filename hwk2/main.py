@@ -82,5 +82,5 @@ def cm2pulse(distance):
 if __name__=='__main__': 
     enable_servo()
     align_robot_to_target()
-    follow_line()
+    follow_obstacle.initial_setup()
     stop()
