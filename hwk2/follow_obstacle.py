@@ -5,7 +5,7 @@ import main as helper
 
 US_SENSOR_PORT = 15
 STEP_SIZE = 0.2
-DIST_OBTACLE = 10
+DIST_OBSTACLE = 10
 ROBOT_FIRST_MOVE = True
 WHEEL_CIRCUMFERENCE = 20.4
 ENCODER_PPR = 18 # Pulses Per Revolution
@@ -18,6 +18,7 @@ locationHistory = []
 obstacleHistory = []
 servoAngle = 90
 def get_robot_world_location():
+        print "get_robot_world_location()" + str(locationHistory[-1])
 	return locationHistory[-1]
 # stores the location of the robot with respect
 # to the world coordinate frame in the location history
@@ -34,17 +35,17 @@ def distance_to_obstacle():
 
 def follow_obstacle():
 	store_obstacle_location()
-	if distance_to_obstacle() < DIST_OBSTACLE:
-                return
+	#if distance_to_obstacle() < DIST_OBSTACLE:
+        #        return
         angle_to_rotate_to = rotate_clockwise()
 	servo(0)
 	SERVO_ANGLE = 0
-	rotate_to_degrees(angle_to_rotate_to)
+	helper.rotate_to_degrees(angle_to_rotate_to)
 	move_obstacle_periphery()
 
 def move_obstacle_periphery():
     	while True:
-	    	go_forward(STEP_SIZE)
+	    	helper.go_forward(STEP_SIZE)
 	    	if is_point_on_mline() and not ROBOT_FIRST_MOVE:
 		    	break	
 	    	if distance_to_obstacle() < DIST_OBSTACLE:
@@ -59,8 +60,9 @@ def rotate_clockwise():
 	while obstacle_distance == distance_to_obstacle():
 		for i in range(10,90,10):
 			servo(90 + i)
+                        time.sleep(2)
 			SERVO_ANGLE = 90 + i
-	return 90 + i
+	return SERVO_ANGLE
 
 def go_forward(distance):
 	set_speed(SPEED)
@@ -75,13 +77,13 @@ def cm2pulse(distance):
 
 def tilt_closer_to_object(cms):
 	helper.rotate_to_degrees(80);
-	go_forward(cms if not None else STEP_SIZE);
+	helper.go_forward(cms if not None else STEP_SIZE);
     
 def tilt_away_from_object(cms):
 	helper.rotate_to_degrees(100);
-	go_forward(cms if not None else STEP_SIZE);
+	helper.go_forward(cms if not None else STEP_SIZE);
 
-def is_point_on_m_line():
+def is_point_on_mline():
 	robot_location = get_robot_world_location()
 	robot_x = robot_location[0]
 	robot_y = robot_location[1]
@@ -103,12 +105,12 @@ def set_m_line():
         else:
                 MLINE_CROSSER = True
 		
-def intial_setup():
+def initial_setup():
 	enable_servo()
 	time.sleep(2)	
 	servo(90)
 	SERVO_ANGLE = 90
-	set_m_line()
+	#set_m_line()
 	follow_obstacle()
     	stop()
 
