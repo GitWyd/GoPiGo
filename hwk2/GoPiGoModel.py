@@ -11,7 +11,6 @@ SENSORARM = 3
 def robot2world(Pr, Or):
 	wHr = getwHr(Or)
 	Pw = np.array(wHr.dot(Pr)).tolist()
-        print "robot2world():" + str(Pw[0]) 
         return Pw[0]
 # transforms Pus in the ultrasonic sensors field of view to the world coordinate frame
 def us2world(Or, dist, phi):
@@ -20,12 +19,10 @@ def us2world(Or, dist, phi):
 	wHus = np.dot(wHr,rHus)
 	Pus = [dist,0,1]
 	Pw = np.array(wHus.dot(Pus)).tolist()
-        print "us2world():" + str(Pw[0]) 
         return Pw[0]
 def getNewRobotLocation(dist, Or, theta):
         Pr = [dist,0,theta]
         dr = robot2world(Pr, Or)
-        print "getNewRobotLocation() Pr - dr" + str(Pr) + "-" + str(dr)
         Or = [x + y for x,y in zip(Or,dr)]
         return Or
 # returns transformation matrix wHr (world_H_robot)

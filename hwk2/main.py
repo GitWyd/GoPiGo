@@ -42,27 +42,33 @@ def align_robot_to_target():
     current_robot_world_location = model.getNewRobotLocation(0,follow_obstacle.get_robot_world_location(),np.deg2rad(angle_to_target()))
     follow_obstacle.store_robot_world_location(current_robot_world_location)
     # Angle to target
-    rotate_to_degrees(angle_to_target() + 90)
+    rotate_left(angle_to_target())
     DISTANCE_TO_TARGET = get_distance_to_target()
 
 def angle_to_target():
     return math.degrees(math.atan((TARGET_Y - SOURCE_Y)/(TARGET_X - SOURCE_X)))
 
 def rotate_left(angle):
-	pulse = int (angle/DPR)
-		if not pulse:
-			return
-	enc_tgt(1,1,pulse)
-	left_rot()
-	stop() 
+    pulse = int (angle/DPR)
+    if not pulse:
+	return
+    # update robot location
+    current_robot_world_location = model.getNewRobotLocation(0,follow_obstacle.get_robot_world_location(),np.deg2rad(angle))
+    follow_obstacle.store_robot_world_location(current_robot_world_location)
+    enc_tgt(0,1, pulse)
+    left_rot()
+    time.sleep(1) 
 
 def rotate_right(angle):
-	pulse = int (angle/DPR)
-	if not pulse:
-		return
-	enc_tgt(1,1,pulse)
-	right_rot()
-	stop() 
+    pulse = int (angle/DPR)
+    if not pulse:
+	return
+    # update robot location
+    current_robot_world_location = model.getNewRobotLocation(0,follow_obstacle.get_robot_world_location(),np.deg2rad(360-angle))
+    follow_obstacle.store_robot_world_location(current_robot_world_location)
+    enc_tgt(1,0, pulse)
+    right_rot()
+    time.sleep(1) 
 
 def get_distance_to_target():
     return math.pow((TARGET_Y - SOURCE_Y),2) + math.pow((TARGET_X - SOURCE_X),2)
@@ -76,29 +82,23 @@ def get_intercept():
     return INTERCEPT
 
 def follow_line():
-    print "Getting world location"
     coords = follow_obstacle.get_robot_world_location()
     if coords[0] == TARGET_X and coords[1] == TARGET_Y:
-        print "Did we really do this. We actuallly found the target"
         TARGET_FOUND = True
     elif follow_obstacle.distance_to_obstacle() <= DIST_OBTACLE:
-        print "Calling anshuman's code for obstacle follow"
         stop()
         follow_obstacle.initial_setup()
     else:
-        print "Moving forward reaaaalllllly slowly"
         go_forward(STEPS_TO_MOVE)
         time.sleep(0.2)
 
 def go_forward(distance):
     set_speed(SPEED)
     pulse = cm2pulse(STEPS_TO_MOVE)
-    print "pulse from go_forward(distance)" + str(pulse)
     enc_tgt(1,1,pulse)
     fwd()
     time.sleep(2)
     current_robot_world_location = model.getNewRobotLocation(distance,follow_obstacle.get_robot_world_location(),0)
-    print "go_forward(distance)" + str(current_robot_world_location)
     follow_obstacle.store_robot_world_location(current_robot_world_location)
     
    
@@ -112,7 +112,6 @@ if __name__=='__main__':
     follow_obstacle.store_robot_world_location([SOURCE_X,SOURCE_Y,0])
     align_robot_to_target()
     servo(90)
-    print "Found target alignment. Lets go"
+    time.sleep(2)
     while not TARGET_FOUND:
-    	print "Target still not found"
         follow_line()
