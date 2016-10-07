@@ -44,11 +44,12 @@ def follow_obstacle():
 	move_obstacle_periphery()
 
 def move_obstacle_periphery():
+	distance = distance_to_obstacle()
     	while True:
 	    	helper.go_forward(STEP_SIZE)
 	    	if is_point_on_mline() and not ROBOT_FIRST_MOVE:
 		    	break	
-	    	if distance_to_obstacle() < DIST_OBSTACLE:
+	    	if distance > DIST_OBSTACLE:
 		    	tilt_closer_to_object()
 	    	else: 
 		    	tilt_away_from_object()	
@@ -76,12 +77,12 @@ def cm2pulse(distance):
 	return encoder_counts
 
 def tilt_closer_to_object(cms):
-	helper.rotate_to_degrees(80);
-	helper.go_forward(cms if not None else STEP_SIZE);
+	while distance_to_obstacle() > DIST_OBSTACLE: 
+		helper.rotate_right(10)
     
 def tilt_away_from_object(cms):
-	helper.rotate_to_degrees(100);
-	helper.go_forward(cms if not None else STEP_SIZE);
+	while distance_to_obstacle() <  DIST_OBSTACLE: 
+		helper.rotate_left(10)
 
 def is_point_on_mline():
 	robot_location = get_robot_world_location()
@@ -90,7 +91,7 @@ def is_point_on_mline():
 	wanted_y = SLOPE * robot_x + MLINE_COEFF
 	if wanted_y - robot_y == 0:
 		return True
-	elif wanted_y > robot_y and MLINE_CROSSER:
+	elif wanted_y >= robot_y and MLINE_CROSSER:
 		return True
 	elif wanted_y < robot_y and not MLINE_CROSSER:
 		return True
@@ -99,8 +100,8 @@ def is_point_on_mline():
 def set_m_line():
 	robot_location = get_robot_world_location()
 	robot_x = robot_location[0]
-	m_line_y  = (robot_x - MLINE_COEFF)/SLOPE
-	if m_line_y > robot_y:
+	m_line_y  = robot_x * SLOPE + MLINE_COEFF
+	if m_line_y >= robot_y:
 		MLINE_CROSSER = False
         else:
                 MLINE_CROSSER = True
