@@ -8,7 +8,7 @@ STEP_SIZE = 0.2
 DIST_OBSTACLE = 20 
 ROBOT_FIRST_MOVE = True
 ENCODER_PPR = 18 # Pulses Per Revolution
-STEPS_TO_MOVE = 1
+STEPS_TO_MOVE = 5 
 SLOPE = helper.get_slope_to_target()
 MLINE_COEFF = helper.get_intercept()
 MLINE_CROSSER = False 
@@ -22,18 +22,22 @@ def get_robot_world_location():
 # to the world coordinate frame in the location history
 def store_robot_world_location(newRobotLocation):
 	locationHistory.append(newRobotLocation)
+        print "!!!!!!!!!!!!! location history !!!!!!!!!!!!"
+        print(locationHistory)
 # stores the location of an object measured by the location
 # of the robot and the lection of an object with respect to it 
-def store_obstacle_location():
-	obstacleCoordinate = model.us2world(get_robot_world_location(), distance_to_obstacle(), SERVO_ANGLE)	
+def store_obstacle_location(servoAngle):
+	obstacleCoordinate = model.us2world(get_robot_world_location(), distance_to_obstacle(), servoAngle)
 	obstacleHistory.append(obstacleCoordinate)
 
 def distance_to_obstacle():
 	return us_dist(US_SENSOR_PORT)
 
 def follow_obstacle():
-	store_obstacle_location()
-	#if distance_to_obstacle() < DIST_OBSTACLE:
+        if (is_point_on_mline()):
+            print "found M-Line"
+            return;
+        #if distance_to_obstacle() < DIST_OBSTACLE:
         #        return
         angle_to_rotate_to = rotate_clockwise()
         stop()
@@ -50,17 +54,17 @@ def move_obstacle_periphery():
         distance = distance_to_obstacle()
     	while True:
                 print "Robot location " + str(get_robot_world_location())
-	    	helper.go_forward(STEP_SIZE)
+	    	helper.go_forward(STEPS_TO_MOVE)
                 print "Distance in main loop " + str(distance)
-	    	if is_point_on_mline() and not ROBOT_FIRST_MOVE:
-                        print 'on the m line'
-		    	break	
+	    	#if is_point_on_mline() and not ROBOT_FIRST_MOVE:
+                #        print 'on the m line'
+		#    	break	
 	    	if distance > DIST_OBSTACLE:
 		    	tilt_closer_to_object()
 	    	else: 
 		    	tilt_away_from_object()
                 distance = distance_to_obstacle()
-		ROBOT_FIRST_MOVE = False;
+		ROBOT_FIRST_MOVE = False
 
 def rotate_clockwise():
 # Rotate till the distance from the intial recorded is different
@@ -69,16 +73,10 @@ def rotate_clockwise():
         global SERVO_ANGLE
 	while obstacle_distance == distance_to_obstacle():
 	    servo(90 + i)
-            time.sleep(3)
+            time.sleep(1)
 	    SERVO_ANGLE = 90 + i
             i += 10
 	return i
-
-def go_forward(distance):
-	set_speed(SPEED)
-	pulse = cm2pulse(STEPS_TO_MOVE)
-	enc_tgt(1,1,pulse)
-	fwd()
 
 def cm2pulse(distance):
 	distToWheelRatio = float(abs(distance) / WHEEL_CIRCUMFERENCE)
@@ -89,15 +87,12 @@ def tilt_closer_to_object():
 	while distance_to_obstacle() > DIST_OBSTACLE: 
                 print 'Distance in tilting closer' + str(distance_to_obstacle())
 		helper.rotate_right(10)
-                time.sleep(1)
-        time.sleep(3)
+                #time.sleep(1)
 def tilt_away_from_object():
 	while distance_to_obstacle() <  DIST_OBSTACLE: 
 		print 'Distance in tilting away' + str(distance_to_obstacle())
 		helper.rotate_left(10)
-                time.sleep(1)
-
-        time.sleep(3)
+                #time.sleep(1)
 
 def is_point_on_mline():
 	robot_location = get_robot_world_location()
@@ -115,6 +110,7 @@ def is_point_on_mline():
 def set_m_line():
 	robot_location = get_robot_world_location()
 	robot_x = robot_location[0]
+        robot_y = robot_location[1]
 	m_line_y  = robot_x * SLOPE + MLINE_COEFF
 	if m_line_y >= robot_y:
 		MLINE_CROSSER = False
@@ -123,11 +119,10 @@ def set_m_line():
 		
 def initial_setup():
 	enable_servo()
-	time.sleep(2)	
 	servo(90)
-        time.sleep(2)
+        time.sleep(0.5)
         SERVO_ANGLE = 90
 	set_m_line()
+	store_obstacle_location(SERVO_ANGLE)
 	follow_obstacle()
     	stop()
-

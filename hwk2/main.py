@@ -29,7 +29,7 @@ SLOPE_TO_TARGET = 0
 INTERCEPT = 0
 TARGET_FOUND = False
 
-STEPS_TO_MOVE = 10
+STEPS_TO_MOVE = 5
 #1 Align the robot to the target
 #2 Get distance to the target
 #3 Move on m-line towards the target
@@ -39,7 +39,9 @@ STEPS_TO_MOVE = 10
 	# else continue
 #4.2 else 3
 def align_robot_to_target():
-    current_robot_world_location = model.getNewRobotLocation(0,follow_obstacle.get_robot_world_location(),np.deg2rad(angle_to_target()))
+    angle = angle_to_target()
+    current_robot_world_location = model.getNewRobotLocation(0,follow_obstacle.get_robot_world_location(),np.deg2rad(angle))
+    current_robot_world_location[2] = np.deg2rad(angle)
     follow_obstacle.store_robot_world_location(current_robot_world_location)
     # Angle to target
     rotate_left(angle_to_target())
@@ -54,21 +56,20 @@ def rotate_left(angle):
 	return
     # update robot location
     current_robot_world_location = model.getNewRobotLocation(0,follow_obstacle.get_robot_world_location(),np.deg2rad(angle))
+    current_robot_world_location[2] = np.deg2rad(angle)
     follow_obstacle.store_robot_world_location(current_robot_world_location)
     enc_tgt(0,1, pulse)
     left_rot()
-    time.sleep(1) 
 
 def rotate_right(angle):
     pulse = int (angle/DPR)
     if not pulse:
 	return
     # update robot location
-    current_robot_world_location = model.getNewRobotLocation(0,follow_obstacle.get_robot_world_location(),np.deg2rad(360-angle))
-    follow_obstacle.store_robot_world_location(current_robot_world_location)
+    new_robot_world_location = model.getNewRobotLocation(0,follow_obstacle.get_robot_world_location(),np.deg2rad(360-angle))
+    follow_obstacle.store_robot_world_location(new_robot_world_location)
     enc_tgt(1,0, pulse)
     right_rot()
-    time.sleep(1) 
 
 def get_distance_to_target():
     return math.pow((TARGET_Y - SOURCE_Y),2) + math.pow((TARGET_X - SOURCE_X),2)
@@ -94,14 +95,19 @@ def follow_line():
 
 def go_forward(distance):
     set_speed(SPEED)
-    pulse = cm2pulse(STEPS_TO_MOVE)
+    print "Distance is " + str(distance)
+    pulse = cm2pulse(distance)
+    print "Pulse is " + str(pulse)
+    if pulse == 0:
+        return
     enc_tgt(1,1,pulse)
     fwd()
-    time.sleep(2)
-    current_robot_world_location = model.getNewRobotLocation(distance,follow_obstacle.get_robot_world_location(),0)
-    follow_obstacle.store_robot_world_location(current_robot_world_location)
+    time.sleep(0.5)
+    old_robot_location = follow_obstacle.get_robot_world_location() 
+    new_robot_world_location = model.getNewRobotLocation(distance,old_robot_location,0)
+    follow_obstacle.store_robot_world_location(new_robot_world_location)
+
     
-   
 def cm2pulse(distance):
     distToWheelRatio = float(abs(distance) / WHEEL_CIRCUMFERENCE)
     encoder_counts = int(distToWheelRatio*ENCODER_PPR)
