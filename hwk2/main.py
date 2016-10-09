@@ -5,7 +5,7 @@ import numpy as np
 import follow_obstacle as follow_obstacle   
 import GoPiGoModel as model
 
-DIST_OBTACLE = 10
+DIST_OBSTACLE = 10
 US_MAX_DIST = 300                           
 US_PIN = 15                                       
 ROTATE_SPEED = 50
@@ -19,7 +19,7 @@ DIRECTION = True #True = Left, False = right
 APPROACHING_DIST = 22   
 DPR = 360.0/64 # Degrees Per Revoluation
 
-TARGET_X = 130
+TARGET_X = 100 
 TARGET_Y = 0
 
 SOURCE_X = 0
@@ -30,6 +30,7 @@ INTERCEPT = 0
 TARGET_FOUND = False
 
 STEPS_TO_MOVE = 5
+TARGET_ANGLE = 0
 #1 Align the robot to the target
 #2 Get distance to the target
 #3 Move on m-line towards the target
@@ -40,8 +41,10 @@ STEPS_TO_MOVE = 5
 #4.2 else 3
 def align_robot_to_target():
     angle = angle_to_target()
+    global TARGET_ANGLE
+    TARGET_ANGLE = angle
     current_robot_world_location = model.getNewRobotLocation(0,follow_obstacle.get_robot_world_location(),np.deg2rad(angle))
-    current_robot_world_location[2] = np.deg2rad(angle)
+    #current_robot_world_location[2] = np.deg2rad(angle)
     follow_obstacle.store_robot_world_location(current_robot_world_location)
     # Angle to target
     rotate_left(angle_to_target())
@@ -52,23 +55,25 @@ def angle_to_target():
 
 def rotate_left(angle):
     pulse = int (angle/DPR)
+    pulse /= 2
     if not pulse:
 	return
     # update robot location
-    current_robot_world_location = model.getNewRobotLocation(0,follow_obstacle.get_robot_world_location(),np.deg2rad(angle))
-    current_robot_world_location[2] = np.deg2rad(angle)
-    follow_obstacle.store_robot_world_location(current_robot_world_location)
-    enc_tgt(0,1, pulse)
+    new_robot_world_location = model.getNewRobotLocation(0,follow_obstacle.get_robot_world_location(),np.deg2rad(angle))
+    #current_robot_world_location[2] += np.deg2rad(angle)
+    follow_obstacle.store_robot_world_location(new_robot_world_location)
+    enc_tgt(1,1, pulse)
     left_rot()
 
 def rotate_right(angle):
     pulse = int (angle/DPR)
+    pulse /= 2
     if not pulse:
 	return
     # update robot location
-    new_robot_world_location = model.getNewRobotLocation(0,follow_obstacle.get_robot_world_location(),np.deg2rad(360-angle))
+    new_robot_world_location = model.getNewRobotLocation(0,follow_obstacle.get_robot_world_location(), np.deg2rad(angle*-1))
     follow_obstacle.store_robot_world_location(new_robot_world_location)
-    enc_tgt(1,0, pulse)
+    enc_tgt(1,1, pulse)
     right_rot()
 
 def get_distance_to_target():
@@ -89,6 +94,21 @@ def follow_line():
     elif follow_obstacle.distance_to_obstacle() <= DIST_OBSTACLE:
         stop()
         follow_obstacle.initial_setup()
+        print "Follow obstacle over"
+        time.sleep(1)
+        current_robot_location = follow_obstacle.get_robot_world_location()
+        print "Location after finding line " + str(current_robot_location)
+        new_angle = TARGET_ANGLE - np.rad2deg(current_robot_location[2])
+        print "Target angle " + str(TARGET_ANGLE)
+        print "New angle " + str(new_angle)
+        if new_angle > 0:
+            print "Rotate left " + str(abs(new_angle))
+            rotate_left(abs(new_angle))
+            time.sleep(1)
+        else:
+            print "Rotate right" + str(abs(new_angle))
+            rotate_right(abs(new_angle))
+            time.sleep(1)
     else:
         go_forward(STEPS_TO_MOVE)
         time.sleep(0.2)

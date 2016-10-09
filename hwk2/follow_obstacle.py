@@ -21,9 +21,8 @@ def get_robot_world_location():
 # stores the location of the robot with respect
 # to the world coordinate frame in the location history
 def store_robot_world_location(newRobotLocation):
+        print "Robot locaiton is " + str(newRobotLocation)
 	locationHistory.append(newRobotLocation)
-        print "!!!!!!!!!!!!! location history !!!!!!!!!!!!"
-        print(locationHistory)
 # stores the location of an object measured by the location
 # of the robot and the lection of an object with respect to it 
 def store_obstacle_location(servoAngle):
@@ -34,9 +33,6 @@ def distance_to_obstacle():
 	return us_dist(US_SENSOR_PORT)
 
 def follow_obstacle():
-        if (is_point_on_mline()):
-            print "found M-Line"
-            return;
         #if distance_to_obstacle() < DIST_OBSTACLE:
         #        return
         angle_to_rotate_to = rotate_clockwise()
@@ -53,12 +49,10 @@ def move_obstacle_periphery():
 	global ROBOT_FIRST_MOVE
         distance = distance_to_obstacle()
     	while True:
-                print "Robot location " + str(get_robot_world_location())
 	    	helper.go_forward(STEPS_TO_MOVE)
-                print "Distance in main loop " + str(distance)
-	    	#if is_point_on_mline() and not ROBOT_FIRST_MOVE:
-                #        print 'on the m line'
-		#    	break	
+	    	if is_point_on_mline() and not ROBOT_FIRST_MOVE:
+                        print 'on the m line'
+		    	break	
 	    	if distance > DIST_OBSTACLE:
 		    	tilt_closer_to_object()
 	    	else: 
@@ -78,32 +72,31 @@ def rotate_clockwise():
             i += 10
 	return i
 
-def cm2pulse(distance):
-	distToWheelRatio = float(abs(distance) / WHEEL_CIRCUMFERENCE)
-	encoder_counts = int(distToWheelRatio*ENCODER_PPR)
-	return encoder_counts
-
 def tilt_closer_to_object():
 	while distance_to_obstacle() > DIST_OBSTACLE: 
-                print 'Distance in tilting closer' + str(distance_to_obstacle())
-		helper.rotate_right(10)
-                #time.sleep(1)
+		print "Rotating closer by 10"
+                helper.rotate_right(15)
+                time.sleep(1)
 def tilt_away_from_object():
 	while distance_to_obstacle() <  DIST_OBSTACLE: 
-		print 'Distance in tilting away' + str(distance_to_obstacle())
-		helper.rotate_left(10)
-                #time.sleep(1)
+		print "Rotating away by 10"
+                helper.rotate_left(15)
+                time.sleep(1)
 
 def is_point_on_mline():
 	robot_location = get_robot_world_location()
 	robot_x = robot_location[0]
 	robot_y = robot_location[1]
 	wanted_y = SLOPE * robot_x + MLINE_COEFF
-	if wanted_y - robot_y == 0:
+        print "MLINE Crosser is " + str(MLINE_CROSSER)
+	if wanted_y  == robot_y:
+                print "Equal "
 		return True
-	elif wanted_y >= robot_y and MLINE_CROSSER:
+	elif wanted_y >= robot_y and not MLINE_CROSSER:
+                print "wanted y greater than equal to robot y"
 		return True
-	elif wanted_y < robot_y and not MLINE_CROSSER:
+	elif wanted_y < robot_y and MLINE_CROSSER:
+                print "wanted y less than MLINE_CROSSER"
 		return True
 	return False
 
