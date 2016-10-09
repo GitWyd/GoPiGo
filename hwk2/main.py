@@ -86,7 +86,7 @@ def follow_line():
     coords = follow_obstacle.get_robot_world_location()
     if coords[0] == TARGET_X and coords[1] == TARGET_Y:
         TARGET_FOUND = True
-    elif follow_obstacle.distance_to_obstacle() <= DIST_OBTACLE:
+    elif follow_obstacle.distance_to_obstacle() <= DIST_OBSTACLE:
         stop()
         follow_obstacle.initial_setup()
     else:
@@ -106,7 +106,6 @@ def go_forward(distance):
     old_robot_location = follow_obstacle.get_robot_world_location() 
     new_robot_world_location = model.getNewRobotLocation(distance,old_robot_location,0)
     follow_obstacle.store_robot_world_location(new_robot_world_location)
-
     
 def cm2pulse(distance):
     distToWheelRatio = float(abs(distance) / WHEEL_CIRCUMFERENCE)
