@@ -8,7 +8,7 @@ STEP_SIZE = 0.2
 DIST_OBSTACLE = 20 
 ROBOT_FIRST_MOVE = True
 ENCODER_PPR = 18 # Pulses Per Revolution
-STEPS_TO_MOVE = 5 
+STEPS_TO_MOVE = 4.534 
 SLOPE = helper.get_slope_to_target()
 MLINE_COEFF = helper.get_intercept()
 MLINE_CROSSER = False 
@@ -29,6 +29,12 @@ def store_obstacle_location(servoAngle):
 	obstacleCoordinate = model.us2world(get_robot_world_location(), distance_to_obstacle(), servoAngle)
 	obstacleHistory.append(obstacleCoordinate)
 
+def get_location_history():
+    return locationHistory
+
+def get_obstacle_history():
+    return obstacleHistory
+    
 def distance_to_obstacle():
 	return us_dist(US_SENSOR_PORT)
 
@@ -59,6 +65,7 @@ def move_obstacle_periphery():
 		    	tilt_away_from_object()
                 distance = distance_to_obstacle()
 		ROBOT_FIRST_MOVE = False
+                time.sleep(1)
 
 def rotate_clockwise():
 # Rotate till the distance from the intial recorded is different
@@ -70,17 +77,25 @@ def rotate_clockwise():
             time.sleep(1)
 	    SERVO_ANGLE = 90 + i
             i += 10
-	return i
+	return angle_closest_to_sensor_multiple(i)
+
+def angle_closest_to_sensor_multiple(angle):
+        multiplier = angle / 22.5
+        new_angle = multiplier * angle
+        remainder = angle % 22.5
+        if remainder > 22.5/2:
+            new_angle += 22.5
+        return new_angle
 
 def tilt_closer_to_object():
 	while distance_to_obstacle() > DIST_OBSTACLE: 
 		print "Rotating closer by 10"
-                helper.rotate_right(15)
+                helper.rotate_right(22.5)
                 time.sleep(1)
 def tilt_away_from_object():
 	while distance_to_obstacle() <  DIST_OBSTACLE: 
 		print "Rotating away by 10"
-                helper.rotate_left(15)
+                helper.rotate_left(22.5)
                 time.sleep(1)
 
 def is_point_on_mline():
@@ -89,7 +104,7 @@ def is_point_on_mline():
 	robot_y = robot_location[1]
 	wanted_y = SLOPE * robot_x + MLINE_COEFF
         print "MLINE Crosser is " + str(MLINE_CROSSER)
-	if wanted_y  == robot_y:
+	if helper.tolerant_equal([0,wanted_y],[0,robot_y]):
                 print "Equal "
 		return True
 	elif wanted_y >= robot_y and not MLINE_CROSSER:
