@@ -5,8 +5,8 @@ import follow_obstacle
 location_history = follow_obstacle.get_location_history()
 #obstacle_history = [[1,2],[1,3],[2,4],[4, 4]]
 obstacle_history follow_obstacle.get_obstacle_history()
-plt.xlim(0, 10)
-plt.ylim(0, 10)
+plt.xlim(0, 300)
+plt.ylim(0, 300)
 plt.xlabel('X-Axis')
 plt.ylabel('Y-Axis')
 ax = plt.axes()
