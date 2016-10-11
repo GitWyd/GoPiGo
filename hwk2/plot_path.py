@@ -4,12 +4,8 @@ import follow_obstacle
 def plot_graph():
     #location_history = [[1,1],[2,2],[5,5]]
     location_history = follow_obstacle.get_location_history()
-    print "Location history"
-    print location_history
     #obstacle_history = [[1,2],[1,3],[2,4],[4, 4]]
-    obstacle_history follow_obstacle.get_obstacle_history()
-    print "Obstacle History"
-    print obstacle_history
+    obstacle_history = follow_obstacle.get_obstacle_history()
     plt.xlim(0, 300)
     plt.ylim(0, 300)
     plt.xlabel('X-Axis')

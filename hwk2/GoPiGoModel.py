@@ -53,6 +53,7 @@ def getrHus(phi):
 # returns a rotation matrix Rz,theta
 def getTransformationMatrix(Tr, theta):
         return np.array([[np.cos(theta),-np.sin(theta),Tr[0]],[np.sin(theta),np.cos(theta),Tr[1]],[0,0,1]])
+
 def main():
 	# how to use robot2world(PointInRobotCoordinateFrame, Origin of Robot Coordinate Frame)
 	theta = 0
