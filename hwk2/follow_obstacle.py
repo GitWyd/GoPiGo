@@ -58,10 +58,14 @@ def move_obstacle_periphery():
 	    	helper.go_forward(STEPS_TO_MOVE)
 	    	if is_point_on_mline() and not ROBOT_FIRST_MOVE:
 		    	break	
-	    	if distance > DIST_OBSTACLE:
+                if is_point_in_history(get_robot_world_location()):
+                        print "robot got lost in loop"
+                        break
+                if distance > DIST_OBSTACLE:
 		    	tilt_closer_to_object()
 	    	else: 
 		    	tilt_away_from_object()
+                
                 distance = distance_to_obstacle()
 		ROBOT_FIRST_MOVE = False
 
@@ -116,6 +120,13 @@ def set_m_line():
 		MLINE_CROSSER = False
         else:
                 MLINE_CROSSER = True
+# checks if coordinate a has been found in the coordinate history,
+# considering the tolerance to account for real world deviations
+def is_point_in_history(a):
+    for point in locationHistory:
+        if helper.tolerant_equal(a,point):
+            return 1
+    return 0
 		
 def initial_setup():
 	enable_servo()
