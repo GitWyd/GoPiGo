@@ -28,7 +28,7 @@ if __name__ == "__main__":
         image = frame.array
         #show the image
         cv2.imshow('frame', image)
-        cv2.waitKey(0)
+        cv2.waitKey(1) & 0xFF
         rawCapture.truncate(0)
 
     #obtain the matrix of the selected points
