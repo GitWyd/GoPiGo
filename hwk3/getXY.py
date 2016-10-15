@@ -21,7 +21,7 @@ def getXY(img):
    #show the image
    print "Please select the color by clicking on the screen..."
    cv2.imshow('image', img)
-   cv2.waitKey(0)
+   key = cv2.waitKey(1) & 0xFF
    cv2.destroyAllWindows()
 
    #obtain the matrix of the selected points
