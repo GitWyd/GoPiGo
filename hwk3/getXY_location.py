@@ -4,11 +4,17 @@ import cv2
 import numpy as np
 import time
 list_of_clicks = []
+hsv_color = []
+FIRST_TIME_CALC_XY = false
 def getxy_callback(event, x, y, flags, param):
     global list_of_clicks
     if event == cv2.EVENT_LBUTTONDOWN :
         list_of_clicks.append([x,y])
-        print "click point is...", (x,y)
+        print "Click point is...", (x,y)
+
+def bgr_to_hsv(color):
+    hsv_color = cv2.cvtColor(color, cv2.COLOR_BGR2HSV)
+    return hsv_color
 
 if __name__ == "__main__":
     camera = PiCamera()
@@ -26,12 +32,43 @@ if __name__ == "__main__":
         # grab the raw NumPy array representing the image, then initialize the timestamp
         # and occupied/unoccupied text
         image = frame.array
+
         #show the image
         cv2.imshow('frame', image)
         cv2.waitKey(1) & 0xFF
         rawCapture.truncate(0)
 
-    #obtain the matrix of the selected points
-    print "The clicked points..."
-    print list_of_clicks
+        # Calculation for color of clicked point
+        if !FIRST_TIME_CALC_XY:
+            global list_of_clicks
+            global FIRST_TIME_CALC_XY
+            xy_clicked = list_of_clicks[0]
+            print "IMAGE PIXEL XY CO-ORDS-"
+            print image[clicked_color_xy[0]][clicked_color_xy[1]]
+            pixels = []
+            # xy
+            pixels.append(image[clicked_color_xy[0]][clicked_color_xy[1]])
+            # xy_upper        
+            pixels.append(image[clicked_color_xy[0] + 1][clicked_color_xy[1]])
+            # xy_lower        
+            pixels.apppemd(image[clicked_color_xy[0] - 1][clicked_color_xy[1]])
+            # xy_upper_left   
+            pixels.append(image[clicked_color_xy[0] + 1][clicked_color_xy[1] - 1])
+            # xy_upper_right  
+            pixels.append(image[clicked_color_xy[0] + 1][clicked_color_xy[1] + 1])
+            # xy_lower_left   
+            pixels.append(image[clicked_color_xy[0] - 1][clicked_color_xy[1] - 1])
+            # xy_lower_right
+            pixels.append(image[clicked_color_xy[0] - 1][clicked_color_xy[1] + 1])
+            # xy_right        
+            pixels.append(image[clicked_color_xy[0]][clicked_color_xy[1] + 1])
+            # xy_left
+            pixels.append(image[clicked_color_xy[0]][clicked_color_xy[1] - 1])
 
+            for pixel in pixels:
+                color = np.array(pixel)
+                global hsv_color
+                hsv_color.append(bgr_to_hsv(color))
+                print "HSV TRANSFORMATION"
+                print hsv_color
+            FIRST_TIME_CALC_XY = true
