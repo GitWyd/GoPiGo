@@ -70,4 +70,8 @@ if __name__ == "__main__":
                 hsv_color.append(bgr_to_hsv(color))
             print "HSV TRANSFORMATION"
             print hsv_color
+
+            hsv_mask = np.mean(np.array(hsv_color), axis=0)
+            print "HSV_MASK"
+            print hsv_mask
             FIRST_TIME_CALC_XY = True
