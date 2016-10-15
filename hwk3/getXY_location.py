@@ -19,8 +19,8 @@ if __name__ == "__main__":
     time.sleep(0.1)
     #define click event
 
-    cv2.namedWindow('image')
-    cv2.setMouseCallback('image', getxy_callback)
+    cv2.namedWindow('frame')
+    cv2.setMouseCallback('frame', getxy_callback)
     print "Please select the color by clicking on the screen..."
     for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=True):
         # grab the raw NumPy array representing the image, then initialize the timestamp
@@ -28,7 +28,7 @@ if __name__ == "__main__":
         image = frame.array
         #show the image
         cv2.imshow('frame', image)
-        key = cv2.waitKey(1) & 0xFF
+        cv2.waitKey(0)
         rawCapture.truncate(0)
 
     #obtain the matrix of the selected points
