@@ -5,7 +5,8 @@ import numpy as np
 import time
 list_of_clicks = []
 hsv_color = []
-FIRST_TIME_CALC_XY = false
+FIRST_TIME_CALC_XY = False
+
 def getxy_callback(event, x, y, flags, param):
     global list_of_clicks
     if event == cv2.EVENT_LBUTTONDOWN :
@@ -13,8 +14,8 @@ def getxy_callback(event, x, y, flags, param):
         print "Click point is...", (x,y)
 
 def bgr_to_hsv(color):
-    hsv_color = cv2.cvtColor(color, cv2.COLOR_BGR2HSV)
-    return hsv_color
+    hsv_pixel = cv2.cvtColor(color, cv2.COLOR_BGR2HSV)
+    return hsv_pixel
 
 if __name__ == "__main__":
     camera = PiCamera()
@@ -39,10 +40,8 @@ if __name__ == "__main__":
         rawCapture.truncate(0)
 
         # Calculation for color of clicked point
-        if !FIRST_TIME_CALC_XY:
-            global list_of_clicks
-            global FIRST_TIME_CALC_XY
-            xy_clicked = list_of_clicks[0]
+        if not FIRST_TIME_CALC_XY and list_of_clicks:           
+            clicked_color_xy = list_of_clicks[0]
             print "IMAGE PIXEL XY CO-ORDS-"
             print image[clicked_color_xy[0]][clicked_color_xy[1]]
             pixels = []
@@ -51,7 +50,7 @@ if __name__ == "__main__":
             # xy_upper        
             pixels.append(image[clicked_color_xy[0] + 1][clicked_color_xy[1]])
             # xy_lower        
-            pixels.apppemd(image[clicked_color_xy[0] - 1][clicked_color_xy[1]])
+            pixels.append(image[clicked_color_xy[0] - 1][clicked_color_xy[1]])
             # xy_upper_left   
             pixels.append(image[clicked_color_xy[0] + 1][clicked_color_xy[1] - 1])
             # xy_upper_right  
@@ -64,11 +63,11 @@ if __name__ == "__main__":
             pixels.append(image[clicked_color_xy[0]][clicked_color_xy[1] + 1])
             # xy_left
             pixels.append(image[clicked_color_xy[0]][clicked_color_xy[1] - 1])
-
+            global hsv_color
             for pixel in pixels:
-                color = np.array(pixel)
-                global hsv_color
+                color = np.uint8([[pixel]])
+                
                 hsv_color.append(bgr_to_hsv(color))
-                print "HSV TRANSFORMATION"
-                print hsv_color
-            FIRST_TIME_CALC_XY = true
+            print "HSV TRANSFORMATION"
+            print hsv_color
+            FIRST_TIME_CALC_XY = True
