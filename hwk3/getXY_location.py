@@ -8,6 +8,7 @@ FIRST_TIME_CALC_XY = False
 image = [[]]
 final_hsv = [[]]
 final_hsv_flip = False
+hue_color = 0
 
 def getxy_callback(event, x, y, flags, param):
     global list_of_clicks
@@ -15,8 +16,10 @@ def getxy_callback(event, x, y, flags, param):
         list_of_clicks.append([x,y])
         print "Click point: ", (x,y)
         print "Image coords", image[y][x]
+        global hue_color
         hue_color = get_hue_color(y,x)
-        show_selected_color(hue_color)
+        global final_hsv_flip
+        final_hsv_flip = True
 
 def bgr_to_hsv(color):
     hsv_pixel = cv2.cvtColor(color, cv2.COLOR_BGR2HSV)
@@ -54,8 +57,8 @@ def get_hue_color(x, y):
     
 def show_selected_color(hue_color):
      hsv_image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
-     lower_hue = np.array([hue_color - 2,100,100])
-     upper_hue = np.array([hue_color + 2,255,255])
+     lower_hue = np.array([hue_color - 5,100,100])
+     upper_hue = np.array([hue_color + 5,255,255])
      mask = cv2.inRange(hsv_image, lower_hue, upper_hue)
      res = cv2.bitwise_and(hsv_image, hsv_image, mask=mask)
      #ret, res = cv2.threshold(hsv_image, hue_color, 0, cv2.THRESH_BINARY)
@@ -63,7 +66,7 @@ def show_selected_color(hue_color):
      global final_hsv_flip
      final_hsv = res
      final_hsv_flip = True
-     cv2.imshow('final_hsv', res)
+     return final_hsv
 
 if __name__ == "__main__":
     camera = PiCamera()
@@ -78,12 +81,13 @@ if __name__ == "__main__":
     print "Please select the color by clicking on the screen..."
     for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=True):
         # grab the raw NumPy array representing the image, then initialize the timestamp
+        image = frame.array
         # and occupied/unoccupied text
         if final_hsv_flip:
             cv2.destroyWindow('frame')
-            cv2.imshow('target', final_hsv)
+            new_im = show_selected_color(hue_color)
+            cv2.imshow('target', new_im)
         else:
-            image = frame.array
             cv2.imshow('frame', image)
         cv2.waitKey(1) & 0xFF
         rawCapture.truncate(0)
