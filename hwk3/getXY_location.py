@@ -57,15 +57,25 @@ def get_hue_color(x, y):
     
 def show_selected_color(hue_color):
      hsv_image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
-     lower_hue = np.array([hue_color - 5,100,100])
+     lower_hue = np.array([hue_color - 5,120,120])
      upper_hue = np.array([hue_color + 5,255,255])
      mask = cv2.inRange(hsv_image, lower_hue, upper_hue)
-     res = cv2.bitwise_and(hsv_image, hsv_image, mask=mask)
-     #ret, res = cv2.threshold(hsv_image, hue_color, 0, cv2.THRESH_BINARY)
+             
+     #res = cv2.bitwise_and(hsv_image, hsv_image, mask=mask)
+     #gray = cv2.cvtColor(res, cv2.COLOR_BGR2GRAY)
+     
+     ret, thresh = cv2.threshold(mask, hue_color, 255, cv2.THRESH_BINARY)
+     
+     kernel = np.ones((5,5),np.uint8) * 255
+     erosion = cv2.erode(thresh, kernel, iterations = 1)
+     dilation = cv2.dilate(erosion, kernel, iterations = 1)
+     
      global final_hsv
      global final_hsv_flip
-     final_hsv = res
+
+     final_hsv = dilation
      final_hsv_flip = True
+     
      return final_hsv
 
 if __name__ == "__main__":
