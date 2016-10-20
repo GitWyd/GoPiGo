@@ -21,6 +21,18 @@ def getxy_callback(event, x, y, flags, param):
         global final_hsv_flip
         final_hsv_flip = True
 
+def move_robot(area, center):
+   # angle_to_rotate_to = 90 - tani(int(center[1]/center[0]))
+   # diff = 0
+   # if area > initial_area
+   #     diff = area - initial_area
+   #     enc_tgt(1, 1, diff)
+   #     bwd()
+   # else if area < initial_area
+   #     diff = initial_area - area
+   #     enc_tgt(1, 1, diff)
+   #     fwd()
+
 def bgr_to_hsv(color):
     hsv_pixel = cv2.cvtColor(color, cv2.COLOR_BGR2HSV)
     return hsv_pixel
@@ -70,12 +82,41 @@ def show_selected_color(hue_color):
      erosion = cv2.erode(thresh, kernel, iterations = 1)
      dilation = cv2.dilate(erosion, kernel, iterations = 1)
      
+     #_, contours, hierarchy = cv2.findContours(thresh, 1, 2)
+
+     #cnt = contours[0]
+     #print "Contours"
+     #print cnt
+     #M = cv2.moments(cnt)
+     #print "Moments"
+     #print M
+     #Centroid calculations
+     #cx = int(M['m10']/M['m00'])
+     #cy = int(M['m01']/M['m00'])
+     
+     #print "Centroid"
+     #print cx,cy
+     #print image[y][x]
+
+     cnts = cv2.findContours(dilation.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[-2]
+     center = None
+
+     if len(cnts) > 0:
+         print "Inside len cnts"
+         c = max(cnts, key=cv2.contourArea)
+         ((x,y), radius) = cv2.minEnclosingCircle(c)
+         M = cv2.moments(c)
+         center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
+         #print "Area is ", M["m00"]
+         #print "Center and Radius", center," ", radius 
+         cv2.circle(dilation, (int(x), int(y)), int(radius), (0, 255, 255), 2)
+         cv2.circle(dilation, center, 5, (0, 0, 255), -1)
+     
+     move_robot(area, center)
      global final_hsv
      global final_hsv_flip
-
      final_hsv = dilation
      final_hsv_flip = True
-     
      return final_hsv
 
 if __name__ == "__main__":
