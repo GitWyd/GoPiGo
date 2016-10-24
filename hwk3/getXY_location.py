@@ -1,16 +1,27 @@
+from gopigo import *
 from picamera.array import PiRGBArray
 from picamera import PiCamera
 import cv2
 import numpy as np
 import time
-
-list_of_clicks = [] # lists the clicks in the picture
+US_PORT = 15
+SPEED = 80
 FIRST_TIME_CALC_XY = False
+# constants to define threshold
+HUE_TOLERANCE = 5;
+SAT_MIN = 120;
+VAL_MIN = 120;
+SAT_MAX = 255;
+VAL_MAX = 255;
+KERNEL_SIZE = 5; # size of n x n kernel
+list_of_clicks = [] # lists the clicks in the picture
 image = [[]]
 final_hsv = [[]]
 final_hsv_flip = False
+is_initialized = False
 hue_color = 0 # color of pixel clicked on
-
+initial_area = None # initial area measured
+initial_distance = 20 # initial measured distance
 def getxy_callback(event, x, y, flags, param):
     global list_of_clicks
     if event == cv2.EVENT_LBUTTONDOWN :
@@ -25,17 +36,43 @@ def getxy_callback(event, x, y, flags, param):
         final_hsv_flip = True
 
 def move_robot(area, center):
-   # angle_to_rotate_to = 90 - tani(int(center[1]/center[0]))
-   # diff = 0
-   # if area > initial_area
-   #     diff = area - initial_area
-   #     enc_tgt(1, 1, diff)
-   #     bwd()
-   # else if area < initial_area
-   #     diff = initial_area - area
-   #     enc_tgt(1, 1, diff)
-   #     fwd()
-
+    set_speed(SPEED)
+    tolerance = 5000
+    px_tolerance = 40
+    centroid_x = center[0]
+#    centroid_y = center[1]
+#    print "center[0]: " + str(centroid_x) + "\t center[1]: " + str(centroid_y)
+#    centroid_dist = (initial_distance/initial_area)*area-initial_distance
+#    angle_to_rotate_to = 90 - np.rad2deg(np.arctan(centroid_y/centroid_x))
+    ang_diff = centroid_x-320
+   # pulse_scalar = int(90*(initial_area/area))
+   # pulses = abs(ang_diff)/pulse_scalar if abs(ang_diff)/pulse_scalar < 4 else 3
+    pulses = 1
+    if ang_diff >px_tolerance:
+        print "turn right"
+        enc_tgt(1,0,pulses)
+        right_rot()
+        time.sleep(1)
+    elif ang_diff < -px_tolerance:
+        print "turn right"
+        enc_tgt(0,1,pulses)
+        left_rot()
+        time.sleep(1)
+    print "initial area: " + str(initial_area) + "\t new area: " + str(area)
+    diff = int(area/tolerance) - int(initial_area/tolerance)
+    if diff > 0:
+        print "move bwd() by "+ str(abs(diff)) 
+        enc_tgt(1, 1, 2)
+        bwd()
+        time.sleep(0.5)
+    elif diff < 0:
+        print "move fwd() by "+ str(abs(diff))
+        enc_tgt(1, 1, 2)
+        fwd()
+        time.sleep(0.5)
+    return
+def rotation(angle_to_rotate_to, diff):
+    return
 def bgr_to_hsv(color):
     hsv_pixel = cv2.cvtColor(color, cv2.COLOR_BGR2HSV)
     return hsv_pixel
@@ -78,9 +115,8 @@ def show_selected_color(hue_color):
      # convert image to hsv
      hsv_image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
      # define range of colors
-     # HUE_TOLERANCE, SAT_THRESHOLD, VAL_THRESHOLD
-     lower_hue = np.array([hue_color - 5,120,120])
-     upper_hue = np.array([hue_color + 5,255,255])
+     lower_hue = np.array([hue_color - HUE_TOLERANCE,SAT_MIN,VAL_MIN])
+     upper_hue = np.array([hue_color + HUE_TOLERANCE,SAT_MAX,VAL_MAX])
      # blacks all pixels outside of the defined bounds
      mask = cv2.inRange(hsv_image, lower_hue, upper_hue)
       
@@ -91,8 +127,7 @@ def show_selected_color(hue_color):
      ret, thresh = cv2.threshold(mask, hue_color, 255, cv2.THRESH_BINARY)
      
      # mask that we run through image to erode the image
-     # KERNEL_SIZE
-     kernel = np.ones((5,5),np.uint8) * 255 # 255 - value for white
+     kernel = np.ones((KERNEL_SIZE, KERNEL_SIZE),np.uint8) * 255 # 255 - value for white
      erosion = cv2.erode(thresh, kernel, iterations = 1)
      # compensate for erosion by dialating with the same kernel
      dilation = cv2.dilate(erosion, kernel, iterations = 1)
@@ -117,7 +152,7 @@ def show_selected_color(hue_color):
      # cnts stores contours
      cnts = cv2.findContours(dilation.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[-2]
      center = None
-
+     area = None
      if len(cnts) > 0:
          print "Inside len cnts"
          # maximum value of cnts given the key contourArea
@@ -127,7 +162,21 @@ def show_selected_color(hue_color):
          M = cv2.moments(c)
          # centroid calculation
          center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
+         area = M["m00"]
          #print "Area is ", M["m00"]
+
+         # if this is the initialization call
+         global is_initialized
+         if (not is_initialized):
+                global initial_area
+                initial_area = area
+                #global initial_distance
+                #servo(90)
+                #time.sleep(.2)
+                #cur_dist = us_dist(US_PORT) 
+                #initial_distance = cur_dist if cur_dist < 200 else 100
+                is_initialized = True # global variables have been initialized
+         
          #print "Center and Radius", center," ", radius 
          cv2.circle(dilation, (int(x), int(y)), int(radius), (0, 255, 255), 2)
          cv2.circle(dilation, center, 5, (0, 0, 255), -1)
@@ -135,11 +184,13 @@ def show_selected_color(hue_color):
      # checkout contourArea and connectedComponents (1 is the object, 1 whole frame)
      # we need to make a centroid a global variable and find the angle
      # set initial distance with ultrasonic sensor
-     move_robot(area, center)
+     if (area):
+        move_robot(area, center)
+         
      global final_hsv
-     global final_hsv_flip
      final_hsv = dilation
-     final_hsv_flip = True
+     #global final_hsv_flip
+     #final_hsv_flip = True
      return final_hsv
 
 if __name__ == "__main__":
