@@ -9,12 +9,13 @@ from math import *
 import random
 
 landmarks = [[20.0, 20.0], [80.0, 80.0], [20.0, 80.0], [80.0, 20.0]]
-world_size = 100.0
-
+world_x = 100.0
+world_y = 100.0
 class robot:
-    def __init__(self):
-        self.x = random.random() * world_size
-        self.y = random.random() * world_size
+    def __init__(self, isRobot = 0):
+        self.isRobot = isRobot
+        self.x = random.random() * world_x
+        self.y = random.random() * world_y
         self.orientation = random.random() * 2.0 * pi
         self.forward_noise = 0.0;
         self.turn_noise = 0.0;
@@ -92,8 +93,8 @@ def eval(r, p):
         
 # --------
 
-N = 1000
-T = 10
+N = 100000
+T = 70
 myrobot = robot()
 
 p = []
