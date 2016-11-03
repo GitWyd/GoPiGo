@@ -11,6 +11,7 @@ import random
 landmarks = [[20.0, 20.0], [80.0, 80.0], [20.0, 80.0], [80.0, 20.0]]
 world_x = 100.0
 world_y = 100.0
+lines = []
 class robot:
     def __init__(self, isRobot = 0):
         self.isRobot = isRobot
@@ -20,11 +21,28 @@ class robot:
         self.forward_noise = 0.0;
         self.turn_noise = 0.0;
         self.sense_noise = 0.0;
+	# adding these to conform with the functions added.
+	# coord_one and coord_two are two points on the imaginary
+	# line made by the US sensor
+	self.coord_one = [self.x, self.y]
+	self.coord_two = [0.0, 0.0]
+	self.angle_line = (self.coord_one,self.coord_two)
 
+    def set_angle_line(angle):
+	print "Setting angle equation"
+	orientation_to_world_angle = self.orientation - pi / 2
+	us_angle = orientation_to_world_angle + angle
+	# Finding out new point on line created by us sensor and the
+	# beam it emits out. Formula is x = old_x + cos(theta).
+	new_x = self.x + 2 * cos(us_angle)
+	new_y = self.y + 2 * sin(us_angle)
+	self.coord_two = [new_x, new_y]
+	self.angle_line = (self.coord_one, self.coord_two)
+	
     def set(self, new_x, new_y, new_orientation):
-        if new_x < 0 or new_x >= world_size:
+        if new_x < 0 or new_x >= world_x:
             raise ValueError, 'X coordinate out of bound'
-        if new_y < 0 or new_y >= world_size:
+        if new_y < 0 or new_y >= world_y:
             raise ValueError, 'Y coordinate out of bound'
         if new_orientation < 0 or new_orientation >= 2 * pi:
             raise ValueError, 'Orientation must be in [0..2pi]'
@@ -42,11 +60,27 @@ class robot:
     def sense(self):
         Z = []
         for i in range(len(landmarks)):
-            dist = sqrt((self.x - landmarks[i][0]) ** 2 + (self.y - landmarks[i][1]) ** 2)
-            dist += random.gauss(0.0, self.sense_noise)
-            Z.append(dist)
+		dist = sqrt((self.x - landmarks[i][0]) ** 2 + (self.y - landmarks[i][1]) ** 2)
+            	dist += random.gauss(0.0, self.sense_noise)
+            	Z.append(dist)
         return Z
-            
+         
+    def virtual_scan():
+	us_scan_readings = []
+	# enable_servo() to be done here for actual robot
+	# Iterating through the angles
+	for i in range(0,180,20):
+	    # servo(i) for actual robot
+	    min_dist = float("inf")
+	    for j in range(len(lines)):
+		# finding intersection points and only storing the least
+		intersection_point = lines[j].find_intersection_with_line(self.angle_line):
+		if intersection_point:    
+		    dist = sqrt((self.x - intersection_point[0]) ** 2 + (self.y - intersection_point[1]) ** 2) 
+		    min_dist = min(min_dist, dist)
+	    us_scan_readings.append(min_dist)
+	return us_scan_readings
+
     def move(self, turn, forward):
         if forward < 0:
             raise ValueError, 'Robot cant move backwards'
@@ -58,8 +92,8 @@ class robot:
         dist = float(forward) + random.gauss(0.0, self.forward_noise)
         x = self.x + (cos(orientation) * dist)
         y = self.y + (sin(orientation) * dist)
-        x %= world_size # cyclic truncate
-        y %= world_size
+        x %= world_x # cyclic truncate
+        y %= world_y
         # set particle
         res = robot()
         res.set(x, y, orientation)
@@ -81,21 +115,89 @@ class robot:
  
     def __repr__(self):
         return '[x=%.6s y=%.6s orient=%.6s]' % (str(self.x), str(self.y), str(self.orientation))
-            
+
+class Line:
+
+    def __init__(self):
+	# coord_one and coord_two are two points 
+	# for the line of obstacles
+	self.coord_one = [0.0, 0.0]
+	self.coord_two = [0.0, 0.0]
+	self.line = (self.coord_one, self.coord_two)
+    
+    def find_intersection_with_line(line2):
+	# Method to find intersection between two lines
+	line1 = self.line 
+	xdiff = (line1[0][0] - line1[1][0], line2[0][0] - line2[1][0])
+    	ydiff = (line1[0][1] - line1[1][1], line2[0][1] - line2[1][1])        
+	div = det(xdiff, ydiff)
+	if div == 0:
+            raise Exception('lines do not intersect')
+    	d = (det(*line1), det(*line2))
+    	x = det(d, xdiff) / div
+    	y = det(d, ydiff) / div
+
+	# Checking if the intersection point is within the range. line2 is the line made by the robot sensor. 
+	if x >= line2[0][0] and x <= line2[1][0] and y >= line2[0][1] and y <= line21[1][1]:
+	    return x, y
+    	else:
+	    return None
+
+    def set_equation(x1, y1, x2, y2):
+	self.coord_one = [x1, y1]
+	self.coord_two = [x2, y2]
+	
+     def det(a, b):
+	return a[0] * b[1] - a[1] * b[0]
+
+
 def eval(r, p):
     sum = 0.0;
     for i in range(len(p)): # calculate mean error
-        dx = (p[i].x - r.x + (world_size/2.0)) % world_size - (world_size/2.0)
-        dy = (p[i].y - r.y + (world_size/2.0)) % world_size - (world_size/2.0)
+        dx = (p[i].x - r.x + (world_x/2.0)) % world_x - (world_x/2.0)
+        dy = (p[i].y - r.y + (world_y/2.0)) % world_y - (world_y/2.0)
         err = sqrt(dx * dx + dy * dy)
         sum += err
     return sum / float(len(p))
-        
+
+def set_environment_boundaries(x,y):
+    # Not sure about the first line
+    # This is just a yukky looking function. Sorry about that. 
+    line1, line2, line3, line4 = Line()
+    line1.set_equation(0, 0, x, 0) # x axis
+    line2.set_equation(0, 0, 0, y) # y axis
+    line3.set_equation(x, 0, x, y) # perpendicular to x, || to y
+    line4.set_equation(0, y, x, y) # perpendicular to y, || to x
+    lines.append(line1)
+    lines.append(line2)
+    lines.append(line3)
+    lines.append(line4)
+
+def set_cone_boundaries(x, y):
+    # setting the boundaries of the cone as lines
+    line1, line2, line3, line4 = Line()
+    line1.set_equation(x - 5.7, y - 5.7, x + 5.7, y - 5.7) # left bottom point to right bottom point
+    line2.set_equation(x - 5.7, y - 5.7, x - 5.7, y + 5.7) # left bottom point to left top point
+    line3.set_equation(x - 5.7, y + 5.7, x + 5.7, y + 5.7) # left top point to top right point
+    line4.set_equation(x + 5.7, y - 5.7, x + 5.7, y + 5.7) # right bottom point to top right point
+    lines.append(line1)
+    lines.append(line2)
+    lines.append(line3)
+    lines.append(line4)
+
+def initialize():
+    global lines
+    obstacles = [obstacle.rstrip('\n') for obstacle in open('ooobstacles.txt')] 
+    set_environment_boundaries()
+    for obstacle in obstacles:
+        set_cone_boundaries()
 # --------
 
-N = 100000
-T = 70
+N = 1000
+T = 50
 myrobot = robot()
+initialize()
+
 
 p = []
 for i in range(N):
