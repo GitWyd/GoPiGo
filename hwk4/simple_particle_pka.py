@@ -12,6 +12,17 @@ landmarks = [[20.0, 20.0], [80.0, 80.0], [20.0, 80.0], [80.0, 20.0]]
 world_x = 100.0
 world_y = 100.0
 lines = []
+def initialize_world():
+    inp = obstacles.txt
+    i = inp.readlines()
+    global world_x
+    global world_y
+    world_x, world_y = i.split()
+    for i in inp.readlines():
+        x,y = i.split()
+        global landmarks
+        landmarks.append([x,y])
+
 class robot:
     def __init__(self, isRobot = 0):
         self.isRobot = isRobot
