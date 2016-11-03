@@ -74,7 +74,7 @@ class robot:
 	    min_dist = float("inf")
 	    for j in range(len(lines)):
 		# finding intersection points and only storing the least
-		intersection_point = lines[j].find_intersection_with_line(self.angle_line):
+		intersection_point = lines[j].find_intersection_with_line(self.angle_line)
 		if intersection_point:    
 		    dist = sqrt((self.x - intersection_point[0]) ** 2 + (self.y - intersection_point[1]) ** 2) 
 		    min_dist = min(min_dist, dist)
@@ -147,7 +147,7 @@ class Line:
 	self.coord_one = [x1, y1]
 	self.coord_two = [x2, y2]
 	
-     def det(a, b):
+    def det(a, b):
 	return a[0] * b[1] - a[1] * b[0]
 
 
@@ -163,7 +163,10 @@ def eval(r, p):
 def set_environment_boundaries(x,y):
     # Not sure about the first line
     # This is just a yukky looking function. Sorry about that. 
-    line1, line2, line3, line4 = Line()
+    line1 = Line() 
+    line2 = Line() 
+    line3 = Line()
+    line4 = Line()
     line1.set_equation(0, 0, x, 0) # x axis
     line2.set_equation(0, 0, 0, y) # y axis
     line3.set_equation(x, 0, x, y) # perpendicular to x, || to y
@@ -175,7 +178,10 @@ def set_environment_boundaries(x,y):
 
 def set_cone_boundaries(x, y):
     # setting the boundaries of the cone as lines
-    line1, line2, line3, line4 = Line()
+    line1 = Line()
+    line2 = Line()
+    line3 = Line() 
+    line4 = Line()
     line1.set_equation(x - 5.7, y - 5.7, x + 5.7, y - 5.7) # left bottom point to right bottom point
     line2.set_equation(x - 5.7, y - 5.7, x - 5.7, y + 5.7) # left bottom point to left top point
     line3.set_equation(x - 5.7, y + 5.7, x + 5.7, y + 5.7) # left top point to top right point
@@ -187,6 +193,7 @@ def set_cone_boundaries(x, y):
 
 def initialize():
     global lines
+    print 'in initialize'
     obstacles = [obstacle.rstrip('\n') for obstacle in open('ooobstacles.txt')] 
     set_environment_boundaries()
     for obstacle in obstacles:
