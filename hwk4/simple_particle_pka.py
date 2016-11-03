@@ -9,19 +9,62 @@ from math import *
 import random
 
 landmarks = [[20.0, 20.0], [80.0, 80.0], [20.0, 80.0], [80.0, 20.0]]
-world_x = 100.0
-world_y = 100.0
+world_x = 0.0
+world_y = 0.0
 lines = []
+
+def set_environment_boundaries(x,y):
+    # Not sure about the first line
+    # This is just a yukky looking function. Sorry about that. 
+    global lines
+    line1 = Line() 
+    line2 = Line() 
+    line3 = Line()
+    line4 = Line()
+    line1.set_equation(0, 0, x, 0) # x axis
+    line2.set_equation(0, 0, 0, y) # y axis
+    line3.set_equation(x, 0, x, y) # perpendicular to x, || to y
+    line4.set_equation(0, y, x, y) # perpendicular to y, || to x
+    lines.append(line1)
+    lines.append(line2)
+    lines.append(line3)
+    lines.append(line4)
+
+def set_cone_boundaries(x, y):
+    # setting the boundaries of the cone as lines
+    global lines
+    line1 = Line()
+    line2 = Line()
+    line3 = Line() 
+    line4 = Line()
+    line1.set_equation(x - 5.7, y - 5.7, x + 5.7, y - 5.7) # left bottom point to right bottom point
+    line2.set_equation(x - 5.7, y - 5.7, x - 5.7, y + 5.7) # left bottom point to left top point
+    line3.set_equation(x - 5.7, y + 5.7, x + 5.7, y + 5.7) # left top point to top right point
+    line4.set_equation(x + 5.7, y - 5.7, x + 5.7, y + 5.7) # right bottom point to top right point
+    lines.append(line1)
+    lines.append(line2)
+    lines.append(line3)
+    lines.append(line4)
+
 def initialize_world():
-    inp = obstacles.txt
-    i = inp.readlines()
+    obstacles = [obstacle.rstrip('\n') for obstacle in open('obstacles.txt')] 
     global world_x
     global world_y
-    world_x, world_y = i.split()
-    for i in inp.readlines():
-        x,y = i.split()
+    world_x = float(obstacles[0].split()[0])
+    world_y = float(obstacles[0].split()[1])
+    print 'world x,y ', world_x, ' ', world_y 
+    set_environment_boundaries(world_x, world_y)
+    for obstacle in obstacles:
+        x = float(obstacle.split()[0])
+	y = float(obstacle.split()[1])
+	print 'landmark x and y ', x, ' ', y
+	set_cone_boundaries(x, y)
         global landmarks
         landmarks.append([x,y])
+    for line in lines:
+	print 'line ', line.get_line()
+    for landmark in landmarks:
+	print 'landmark ', landmark
 
 class robot:
     def __init__(self, isRobot = 0):
@@ -134,11 +177,10 @@ class Line:
 	# for the line of obstacles
 	self.coord_one = [0.0, 0.0]
 	self.coord_two = [0.0, 0.0]
-	self.line = (self.coord_one, self.coord_two)
     
     def find_intersection_with_line(line2):
 	# Method to find intersection between two lines
-	line1 = self.line 
+	line1 = (self.coord_one, self.coord_two)
 	xdiff = (line1[0][0] - line1[1][0], line2[0][0] - line2[1][0])
     	ydiff = (line1[0][1] - line1[1][1], line2[0][1] - line2[1][1])        
 	div = det(xdiff, ydiff)
@@ -154,13 +196,15 @@ class Line:
     	else:
 	    return None
 
-    def set_equation(x1, y1, x2, y2):
+    def set_equation(self, x1, y1, x2, y2):
 	self.coord_one = [x1, y1]
 	self.coord_two = [x2, y2]
 	
-    def det(a, b):
+    def det(self, a, b):
 	return a[0] * b[1] - a[1] * b[0]
-
+    
+    def get_line(self):
+	return (self.coord_one, self.coord_two)
 
 def eval(r, p):
     sum = 0.0;
@@ -171,50 +215,14 @@ def eval(r, p):
         sum += err
     return sum / float(len(p))
 
-def set_environment_boundaries(x,y):
-    # Not sure about the first line
-    # This is just a yukky looking function. Sorry about that. 
-    line1 = Line() 
-    line2 = Line() 
-    line3 = Line()
-    line4 = Line()
-    line1.set_equation(0, 0, x, 0) # x axis
-    line2.set_equation(0, 0, 0, y) # y axis
-    line3.set_equation(x, 0, x, y) # perpendicular to x, || to y
-    line4.set_equation(0, y, x, y) # perpendicular to y, || to x
-    lines.append(line1)
-    lines.append(line2)
-    lines.append(line3)
-    lines.append(line4)
-
-def set_cone_boundaries(x, y):
-    # setting the boundaries of the cone as lines
-    line1 = Line()
-    line2 = Line()
-    line3 = Line() 
-    line4 = Line()
-    line1.set_equation(x - 5.7, y - 5.7, x + 5.7, y - 5.7) # left bottom point to right bottom point
-    line2.set_equation(x - 5.7, y - 5.7, x - 5.7, y + 5.7) # left bottom point to left top point
-    line3.set_equation(x - 5.7, y + 5.7, x + 5.7, y + 5.7) # left top point to top right point
-    line4.set_equation(x + 5.7, y - 5.7, x + 5.7, y + 5.7) # right bottom point to top right point
-    lines.append(line1)
-    lines.append(line2)
-    lines.append(line3)
-    lines.append(line4)
-
 def initialize():
-    global lines
     print 'in initialize'
-    obstacles = [obstacle.rstrip('\n') for obstacle in open('ooobstacles.txt')] 
-    set_environment_boundaries()
-    for obstacle in obstacles:
-        set_cone_boundaries()
 # --------
 
 N = 1000
 T = 50
 myrobot = robot()
-initialize()
+initialize_world()
 
 
 p = []
