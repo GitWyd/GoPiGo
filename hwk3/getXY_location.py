@@ -48,7 +48,7 @@ def move_robot(area, center):
    # pulse_scalar = int(90*(initial_area/area))
    # pulses = abs(ang_diff)/pulse_scalar if abs(ang_diff)/pulse_scalar < 4 else 3
     pulses = 1
-    if ang_diff >px_tolerance:
+    if ang_diff > px_tolerance:
         print "turn right"
         enc_tgt(1,0,pulses)
         right_rot()
