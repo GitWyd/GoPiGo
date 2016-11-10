@@ -5,6 +5,7 @@
 # movement is arbitrary with sensor noise
 
 import time
+from turtle import *
 from math import *
 import random
 from draw_world import Maze
@@ -200,7 +201,7 @@ class Line:
 
     def __init__(self):
         # coord_one and coord_two are two points 
-     ()   # for the line of obstacles
+        # for the line of obstacles
         self.coord_one = [0.0, 0.0]
         self.coord_two = [0.0, 0.0]
     
@@ -281,6 +282,7 @@ print 'Mean error at start', eval(myrobot, p)
 print p
 
 graph_world.show_particles(p, isEvaluated)
+graph_world.show_robot(myrobot)
 
 for t in range(T):
 #    print p
@@ -318,6 +320,11 @@ for t in range(T):
     print 'Mean error',eval(myrobot, p)
 
 graph_world.show_particles(p, True)
+
+isEvaluated = True
+graph_world.show_particles(p, isEvaluated)
+graph_world.show_robot(myrobot)
+exitonclick()
     
 print ' '
 if eval(myrobot, p) > 0.0:
