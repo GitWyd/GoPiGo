@@ -4,7 +4,7 @@
 # Sensing is distance of robot from 4 landmarks (with sensor noise)
 # movement is arbitrary with sensor noise
 
-
+from turtle import *
 from math import *
 import random
 from draw_world import Maze
@@ -278,6 +278,7 @@ print 'Mean error at start', eval(myrobot, p)
 # show particle's initial locations
 print p
 graph_world.show_particles(p, isEvaluated)
+graph_world.show_robot(myrobot)
 
 for t in range(T):
 #    print p
@@ -309,8 +310,10 @@ for t in range(T):
     p = p3
     
     print 'Mean error',eval(myrobot, p)
-
-graph_world.show_particles(p, isEvaluated=True)
+isEvaluated = True
+graph_world.show_particles(p, isEvaluated)
+graph_world.show_robot(myrobot)
+exitonclick()
     
 print ' '
 if eval(myrobot, p) > 0.0:

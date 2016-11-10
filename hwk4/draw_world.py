@@ -2,6 +2,7 @@ import math
 import turtle
 import random
 from turtle import *
+import numpy as np
 
 OBSTACLE_LINE_COLOR = "red"
 OBSTACLE_FILL_COLOR = "red"
@@ -56,9 +57,9 @@ class Maze(object):
 
     def show_mean(self, mean_x, mean_y, is_evaluated):
         if is_evaluated:
-            turtle.color("gray")
-        else:
             turtle.color("green")
+        else:
+            turtle.color("gray")
         turtle.setposition(mean_x, mean_y)
         turtle.shape("circle")
         turtle.stamp()
@@ -71,13 +72,15 @@ class Maze(object):
         sum_y = 0
         mean_x = 0 
         mean_y = 0
+        count = 0
         for particle in particles:
-            turtle.setposition(particle.x, particle.y)
-            turtle.setheading(90 - particle.orientation) # Need to confirm angle adjustment based on values in the main file
+        	sum_x += particle.x
+        	sum_y += particle.y
+        for i in range(0,len(particles), 10):
+            turtle.setposition(particles[i].x, particles[i].y)
+            turtle.setheading(np.rad2deg(particles[i].orientation)) # Need to confirm angle adjustment based on values in the main file
             # turtle.color(self.weight_to_color(particle.weight)) # need to check this with the original file
             turtle.stamp()
-            sum_x += particle.x
-            sum_y += particle.y
 
         mean_x = sum_x/float(len(particles))
         mean_y = sum_y/float(len(particles))
@@ -89,7 +92,7 @@ class Maze(object):
         turtle.color("green")
         turtle.shape('turtle')
         turtle.setposition(robot.x, robot.y)
-        turtle.setheading(90 - robot.orientation)
+        turtle.setheading(np.rad2deg(robot.orientation))
         turtle.stamp()
         turtle.update()
 
