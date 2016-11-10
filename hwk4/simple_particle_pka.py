@@ -7,6 +7,7 @@
 
 from math import *
 import random
+from draw_world import Maze
 
 # ENVIRONMENT / ROBOT CONSTANTS 
 CONE = 5.7
@@ -18,6 +19,7 @@ R_TURN = 0.1
 R_MOVE = 5.0
 
 landmarks = [[20.0, 20.0], [80.0, 80.0], [20.0, 80.0], [80.0, 20.0]]
+obstacles = []
 world_x = 0.0
 world_y = 0.0
 lines = []
@@ -55,6 +57,7 @@ def set_cone_boundaries(x, y):
     lines.append(line4)
 
 def initialize_world():
+    global obstacles
     obstacles = [obstacle.rstrip('\n') for obstacle in open('obstacles.txt')] 
     global world_x
     global world_y
@@ -136,7 +139,7 @@ class robot:
 #    def sense(self):
 #        Z = []
 #        for i in range(len(landmarks)):
-#		dist = sqrt((self.x - landmarks[i][0]) ** 2 + (self.y - landmarks[i][1]) ** 2)
+#		        dist = sqrt((self.x - landmarks[i][0]) ** 2 + (self.y - landmarks[i][1]) ** 2)
 #            	dist += random.gauss(0.0, self.sense_noise)
 #            	Z.append(dist)
 #        return Z 
@@ -240,13 +243,15 @@ def eval(r, p):
 
 def initialize():
     print 'in initialize'
-# --------
 
+# --------
 N = 1000 # number of particles
 T = 50   # number of iterations
 myrobot = robot()
 initialize_world()
-
+isEvaluated = 0
+graph_world = Maze(world_x, world_y, obstacles[1:])
+graph_world.draw()
 
 p = [] # list of particles
 for i in range(N):
@@ -256,7 +261,8 @@ for i in range(N):
     
 print 'Mean error at start', eval(myrobot, p)
 # show particle's initial locations
-print p    
+print p
+graph_world.showParticles(particles, isEvaluated)
 
 for t in range(T):
 #    print p
@@ -288,6 +294,8 @@ for t in range(T):
     p = p3
     
     print 'Mean error',eval(myrobot, p)
+
+graph_world.showParticles(particles, isEvaluated=True)
     
 print ' '
 if eval(myrobot, p) > 0.0:
