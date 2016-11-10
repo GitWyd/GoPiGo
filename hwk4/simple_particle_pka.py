@@ -8,11 +8,19 @@
 from math import *
 import random
 
+# ENVIRONMENT / ROBOT CONSTANTS 
+CONE = 5.7
+NOISE_FWD = 0
+NOISE_ROT = 0
+NOISE_US  = 0
+DIST_US = 10
+R_TURN = 0.1
+R_MOVE = 5.0
+
 landmarks = [[20.0, 20.0], [80.0, 80.0], [20.0, 80.0], [80.0, 20.0]]
 world_x = 0.0
 world_y = 0.0
 lines = []
-
 def set_environment_boundaries(x,y):
     # Not sure about the first line
     # This is just a yukky looking function. Sorry about that. 
@@ -37,10 +45,10 @@ def set_cone_boundaries(x, y):
     line2 = Line()
     line3 = Line() 
     line4 = Line()
-    line1.set_equation(x - 5.7, y - 5.7, x + 5.7, y - 5.7) # left bottom point to right bottom point
-    line2.set_equation(x - 5.7, y - 5.7, x - 5.7, y + 5.7) # left bottom point to left top point
-    line3.set_equation(x - 5.7, y + 5.7, x + 5.7, y + 5.7) # left top point to top right point
-    line4.set_equation(x + 5.7, y - 5.7, x + 5.7, y + 5.7) # right bottom point to top right point
+    line1.set_equation(x - CONE, y - CONE, x + CONE, y - CONE) # left bottom point to right bottom point
+    line2.set_equation(x - CONE, y - CONE, x - CONE, y + CONE) # left bottom point to left top point
+    line3.set_equation(x - CONE, y + CONE, x + CONE, y + CONE) # left top point to top right point
+    line4.set_equation(x + CONE, y - CONE, x + CONE, y + CONE) # right bottom point to top right point
     lines.append(line1)
     lines.append(line2)
     lines.append(line3)
@@ -53,45 +61,60 @@ def initialize_world():
     world_x = float(obstacles[0].split()[0])
     world_y = float(obstacles[0].split()[1])
     print 'world x,y ', world_x, ' ', world_y 
-    set_environment_boundaries(world_x, world_y)
+    # generate lines of env. borders 
+    set_environment_boundaries(world_x, world_y) 
+    # generate lines of obstacles / cones
     for obstacle in obstacles:
         x = float(obstacle.split()[0])
-	y = float(obstacle.split()[1])
-	print 'landmark x and y ', x, ' ', y
-	set_cone_boundaries(x, y)
+    	y = float(obstacle.split()[1])
+    	print 'landmark x and y ', x, ' ', y
+    	set_cone_boundaries(x, y) # consider renaming
         global landmarks
         landmarks.append([x,y])
+    print_lines_landmarks()
+
+# prints lines and landmarks
+def print_lines_landmarks():
+    global lines
+    global landmarks
     for line in lines:
-	print 'line ', line.get_line()
+    	print 'line ', line.get_line()
     for landmark in landmarks:
-	print 'landmark ', landmark
+    	print 'landmark ', landmark
 
 class robot:
     def __init__(self, isRobot = 0):
         self.isRobot = isRobot
+        # random values are uniformly distributed
         self.x = random.random() * world_x
         self.y = random.random() * world_y
         self.orientation = random.random() * 2.0 * pi
+        # define ultrasonic location
+        self.usX = self.x + DIST_US * cos(self.orientation)
+        self.usY = self.y + DIST_US * sin(self.orientation)
+        self.usPhi = self.orientation - pi/2
+        # define noise variables
         self.forward_noise = 0.0;
         self.turn_noise = 0.0;
         self.sense_noise = 0.0;
-	# adding these to conform with the functions added.
-	# coord_one and coord_two are two points on the imaginary
-	# line made by the US sensor
-	self.coord_one = [self.x, self.y]
-	self.coord_two = [0.0, 0.0]
-	self.angle_line = (self.coord_one,self.coord_two)
+    	# adding these to conform with the functions added.
+    	# coord_one and coord_two are two points on the imaginary
+    	# line made by the US sensor
+    	self.coord_one = [self.usX, self.usY]
+    	self.coord_two = [0.0, 0.0]
+    	self.angle_line = (self.coord_one,self.coord_two)
 
     def set_angle_line(angle):
-	print "Setting angle equation"
-	orientation_to_world_angle = self.orientation - pi / 2
-	us_angle = orientation_to_world_angle + angle
-	# Finding out new point on line created by us sensor and the
-	# beam it emits out. Formula is x = old_x + cos(theta).
-	new_x = self.x + 2 * cos(us_angle)
-	new_y = self.y + 2 * sin(us_angle)
-	self.coord_two = [new_x, new_y]
-	self.angle_line = (self.coord_one, self.coord_two)
+    	print "Setting angle equation"
+    	orientation_to_world_angle = self.orientation - pi / 2
+    	us_angle = orientation_to_world_angle + angle
+        self.usPhi = us_angle
+    	# Finding out new point on line created by us sensor and the
+    	# beam it emits out. Formula is x = old_x + cos(theta).
+    	new_x = self.x + 2 * cos(us_angle)
+    	new_y = self.y + 2 * sin(us_angle)
+    	self.coord_two = [new_x, new_y]
+    	self.angle_line = (self.coord_one, self.coord_two)
 	
     def set(self, new_x, new_y, new_orientation):
         if new_x < 0 or new_x >= world_x:
@@ -110,30 +133,28 @@ class robot:
         self.forward_noise = float(new_f_noise);
         self.turn_noise = float(new_t_noise);
         self.sense_noise = float(new_s_noise);
-
-    def sense(self):
-        Z = []
-        for i in range(len(landmarks)):
-		dist = sqrt((self.x - landmarks[i][0]) ** 2 + (self.y - landmarks[i][1]) ** 2)
-            	dist += random.gauss(0.0, self.sense_noise)
-            	Z.append(dist)
-        return Z
-         
-    def virtual_scan():
-	us_scan_readings = []
-	# enable_servo() to be done here for actual robot
-	# Iterating through the angles
-	for i in range(0,180,20):
-	    # servo(i) for actual robot
-	    min_dist = float("inf")
-	    for j in range(len(lines)):
-		# finding intersection points and only storing the least
-		intersection_point = lines[j].find_intersection_with_line(self.angle_line)
-		if intersection_point:    
-		    dist = sqrt((self.x - intersection_point[0]) ** 2 + (self.y - intersection_point[1]) ** 2) 
-		    min_dist = min(min_dist, dist)
-	    us_scan_readings.append(min_dist)
-	return us_scan_readings
+#    def sense(self):
+#        Z = []
+#        for i in range(len(landmarks)):
+#		dist = sqrt((self.x - landmarks[i][0]) ** 2 + (self.y - landmarks[i][1]) ** 2)
+#            	dist += random.gauss(0.0, self.sense_noise)
+#            	Z.append(dist)
+#        return Z 
+    def virtual_scan(self):
+    	us_scan_readings = []
+    	# enable_servo() to be done here for actual robot
+    	# Iterating through the angles (at every 20 degrees)
+    	for i in range(0,180,20):
+    	    # servo(i) for actual robot
+    	    min_dist = float("inf")
+    	    for j in range(len(lines)):
+    		# finding intersection points and only storing the least
+    		intersection_point = lines[j].find_intersection_with_line(self.angle_line)
+    		if intersection_point: 
+    		    dist = sqrt((self.x - intersection_point[0]) ** 2 + (self.y - intersection_point[1]) ** 2) 
+    		    min_dist = min(min_dist, dist)
+    	    us_scan_readings.append(min_dist)
+    	return us_scan_readings
 
     def move(self, turn, forward):
         if forward < 0:
@@ -146,9 +167,9 @@ class robot:
         dist = float(forward) + random.gauss(0.0, self.forward_noise)
         x = self.x + (cos(orientation) * dist)
         y = self.y + (sin(orientation) * dist)
-        x %= world_x # cyclic truncate
-        y %= world_y
-        # set particle
+        x %= world_x # cyclic truncate i.e. wrap around
+        y %= world_y # cyclic truncate i.e. wrap around 
+        # set particle & return new particle with new location
         res = robot()
         res.set(x, y, orientation)
         res.set_noise(self.forward_noise, self.turn_noise, self.sense_noise)
@@ -159,16 +180,16 @@ class robot:
         return exp(- ((mu - x) ** 2) / (sigma ** 2) / 2.0) / sqrt(2.0 * pi * (sigma ** 2))
 
     def measurement_prob(self, measurement):
+        prtcl_measurements = self.virtual_scan() 
         # calculates how likely a measurement should be
         prob = 1.0;
-                
-        for i in range(len(landmarks)):
-            dist = sqrt((self.x - landmarks[i][0]) ** 2 + (self.y - landmarks[i][1]) ** 2)
+        for i in range(len(measurement)):
+            dist = prtcl_measurements[i] - measurement[i]
             prob *= self.Gaussian(dist, self.sense_noise, measurement[i])
         return prob
  
     def __repr__(self):
-        return '[x=%.6s y=%.6s orient=%.6s]' % (str(self.x), str(self.y), str(self.orientation))
+        return '[x=%.6s y=%.6s orient=%.6s] \n [usX=%.6s usY=%.6s usPhi=%.6s]' % (str(self.x), str(self.y), str(self.orientation), str(self.usX), str(self.usY), str(self.usPhi))
 
 class Line:
 
@@ -178,33 +199,35 @@ class Line:
 	self.coord_one = [0.0, 0.0]
 	self.coord_two = [0.0, 0.0]
     
-    def find_intersection_with_line(line2):
-	# Method to find intersection between two lines
-	line1 = (self.coord_one, self.coord_two)
-	xdiff = (line1[0][0] - line1[1][0], line2[0][0] - line2[1][0])
+    def find_intersection_with_line(self, line2):
+    	# Method to find intersection between two lines
+    	line1 = (self.coord_one, self.coord_two)
+    	xdiff = (line1[0][0] - line1[1][0], line2[0][0] - line2[1][0])
     	ydiff = (line1[0][1] - line1[1][1], line2[0][1] - line2[1][1])        
-	div = det(xdiff, ydiff)
-	if div == 0:
+    	div = det(xdiff, ydiff)
+    	if div == 0:
             raise Exception('lines do not intersect')
+
     	d = (det(*line1), det(*line2))
     	x = det(d, xdiff) / div
     	y = det(d, ydiff) / div
 
-	# Checking if the intersection point is within the range. line2 is the line made by the robot sensor. 
-	if x >= line2[0][0] and x <= line2[1][0] and y >= line2[0][1] and y <= line21[1][1]:
-	    return x, y
+    	# Checking if the intersection point is within the range. line2 is the line made by the robot sensor. 
+    	if x >= line2[0][0] and x <= line2[1][0] and y >= line2[0][1] and y <= line2[1][1]:
+    	    return x, y
     	else:
-	    return None
+    	    return None
 
     def set_equation(self, x1, y1, x2, y2):
-	self.coord_one = [x1, y1]
-	self.coord_two = [x2, y2]
+        self.coord_one = [x1, y1]
+        self.coord_two = [x2, y2]
 	
-    def det(self, a, b):
-	return a[0] * b[1] - a[1] * b[0]
-    
     def get_line(self):
-	return (self.coord_one, self.coord_two)
+    	return (self.coord_one, self.coord_two)
+    
+def det(a, b):
+    return a[0] * b[1] - a[1] * b[0]
+    
 
 def eval(r, p):
     sum = 0.0;
@@ -219,13 +242,13 @@ def initialize():
     print 'in initialize'
 # --------
 
-N = 1000
-T = 50
+N = 1000 # number of particles
+T = 50   # number of iterations
 myrobot = robot()
 initialize_world()
 
 
-p = []
+p = [] # list of particles
 for i in range(N):
     r = robot()
     r.set_noise(0.05, 0.05, 5.0) # provided noise.
@@ -237,14 +260,14 @@ print p
 
 for t in range(T):
 #    print p
-    myrobot= myrobot.move(0.1, 5.0)
-    Z = myrobot.sense()
+    myrobot= myrobot.move(R_TURN, R_MOVE)
+    Z = myrobot.virtual_scan()
     
-    p2 = []
-
+    # move all robots by  
+    p_temp = []
     for i in range(N):
-        p2.append(p[i].move(0.1, 5.0))
-    p = p2
+        p_temp.append(p[i].move(R_TURN, R_MOVE))
+    p = p_temp
     
     w = []
     for i in range(N):
@@ -254,7 +277,7 @@ for t in range(T):
 # this is importance sampling code
 
     index = int(random.random() * N)
-    beta = 0.0
+    beta = 0.0 # what is beta
     mw = max(w)
     for i in range(N):
         beta += random.random() * 2.0 * mw
