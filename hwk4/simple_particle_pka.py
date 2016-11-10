@@ -4,11 +4,11 @@
 # Sensing is distance of robot from 4 landmarks (with sensor noise)
 # movement is arbitrary with sensor noise
 
-
+import time
 from math import *
 import random
 from draw_world import Maze
-
+from GoPiGoModel import getNewRobotLocation
 # ENVIRONMENT / ROBOT CONSTANTS 
 CONE = 5.7
 NOISE_FWD = 0
@@ -69,9 +69,9 @@ def initialize_world():
     # generate lines of obstacles / cones
     for obstacle in obstacles:
         x = float(obstacle.split()[0])
-    	y = float(obstacle.split()[1])
-    	print 'landmark x and y ', x, ' ', y
-    	set_cone_boundaries(x, y) # consider renaming
+        y = float(obstacle.split()[1])
+        print 'landmark x and y ', x, ' ', y
+        set_cone_boundaries(x, y) # consider renaming
         global landmarks
         landmarks.append([x,y])
     print_lines_landmarks()
@@ -81,9 +81,9 @@ def print_lines_landmarks():
     global lines
     global landmarks
     for line in lines:
-    	print 'line ', line.get_line()
+        print 'line ', line.get_line()
     for landmark in landmarks:
-    	print 'landmark ', landmark
+        print 'landmark ', landmark
 
 class robot:
     def __init__(self, isRobot = 0):
@@ -100,25 +100,25 @@ class robot:
         self.forward_noise = 0.0;
         self.turn_noise = 0.0;
         self.sense_noise = 0.0;
-    	# adding these to conform with the functions added.
-    	# coord_one and coord_two are two points on the imaginary
-    	# line made by the US sensor
-    	self.coord_one = [self.usX, self.usY]
-    	self.coord_two = [0.0, 0.0]
-    	self.angle_line = (self.coord_one,self.coord_two)
+        # adding these to conform with the functions added.
+        # coord_one and coord_two are two points on the imaginary
+        # line made by the US sensor
+        self.coord_one = [self.usX, self.usY]
+        self.coord_two = [0.0, 0.0]
+        self.angle_line = (self.coord_one,self.coord_two)
 
     def set_angle_line(angle):
-    	print "Setting angle equation"
-    	orientation_to_world_angle = self.orientation - pi / 2
-    	us_angle = orientation_to_world_angle + angle
+        print "Setting angle equation"
+        orientation_to_world_angle = self.orientation - pi / 2
+        us_angle = orientation_to_world_angle + angle
         self.usPhi = us_angle
-    	# Finding out new point on line created by us sensor and the
-    	# beam it emits out. Formula is x = old_x + cos(theta).
-    	new_x = self.x + 2 * cos(us_angle)
-    	new_y = self.y + 2 * sin(us_angle)
-    	self.coord_two = [new_x, new_y]
-    	self.angle_line = (self.coord_one, self.coord_two)
-	
+        # Finding out new point on line created by us sensor and the
+        # beam it emits out. Formula is x = old_x + cos(theta).
+        new_x = self.x + 2 * cos(us_angle)
+        new_y = self.y + 2 * sin(us_angle)
+        self.coord_two = [new_x, new_y]
+        self.angle_line = (self.coord_one, self.coord_two)
+    
     def set(self, new_x, new_y, new_orientation):
         if new_x < 0 or new_x >= world_x:
             raise ValueError, 'X coordinate out of bound'
@@ -139,25 +139,26 @@ class robot:
 #    def sense(self):
 #        Z = []
 #        for i in range(len(landmarks)):
-#		        dist = sqrt((self.x - landmarks[i][0]) ** 2 + (self.y - landmarks[i][1]) ** 2)
-#            	dist += random.gauss(0.0, self.sense_noise)
-#            	Z.append(dist)
+#                dist = sqrt((self.x - landmarks[i][0]) ** 2 + (self.y - landmarks[i][1]) ** 2)
+#                dist += random.gauss(0.0, self.sense_noise)
+#                Z.append(dist)
 #        return Z 
     def virtual_scan(self):
-    	us_scan_readings = []
-    	# enable_servo() to be done here for actual robot
-    	# Iterating through the angles (at every 20 degrees)
-    	for i in range(0,180,20):
-    	    # servo(i) for actual robot
-    	    min_dist = float("inf")
-    	    for j in range(len(lines)):
-    		# finding intersection points and only storing the least
-    		intersection_point = lines[j].find_intersection_with_line(self.angle_line)
-    		if intersection_point: 
-    		    dist = sqrt((self.x - intersection_point[0]) ** 2 + (self.y - intersection_point[1]) ** 2) 
-    		    min_dist = min(min_dist, dist)
-    	    us_scan_readings.append(min_dist)
-    	return us_scan_readings
+        us_scan_readings = []
+        # enable_servo() to be done here for actual robot
+        # Iterating through the angles (at every 20 degrees)
+        for i in range(0,180,20):
+            # servo(i) for actual robot
+            min_dist = float("inf")
+            for j in range(len(lines)):
+                # finding intersection points and only storing the least
+                intersection_point = lines[j].find_intersection_with_line(self.angle_line)
+                if intersection_point: 
+                    dist = sqrt((self.x - intersection_point[0]) ** 2 + (self.y - intersection_point[1]) ** 2)
+                    dist += random.gauss(0.0, self.sense_noise)
+                    min_dist = min(min_dist, dist)
+            us_scan_readings.append(min_dist)
+        return us_scan_readings
 
     def move(self, turn, forward):
         if forward < 0:
@@ -165,6 +166,7 @@ class robot:
         # turn, and add randomness to the turning command
         orientation = self.orientation + float(turn) + random.gauss(0.0, self.turn_noise)
         orientation %= 2 * pi
+#        if self.isRobot:
 
         # move, and add randomness to the motion command
         dist = float(forward) + random.gauss(0.0, self.forward_noise)
@@ -187,46 +189,46 @@ class robot:
         # calculates how likely a measurement should be
         prob = 1.0;
         for i in range(len(measurement)):
-            dist = prtcl_measurements[i] - measurement[i]
+            dist = prtcl_measurements[i]
             prob *= self.Gaussian(dist, self.sense_noise, measurement[i])
         return prob
  
     def __repr__(self):
-        return '[x=%.6s y=%.6s orient=%.6s] \n [usX=%.6s usY=%.6s usPhi=%.6s]' % (str(self.x), str(self.y), str(self.orientation), str(self.usX), str(self.usY), str(self.usPhi))
+        return '\n\t[x=%.6s y=%.6s orient=%.6s] \n\t[usX=%.6s usY=%.6s usPhi=%.6s]' % (str(self.x), str(self.y), str(self.orientation), str(self.usX), str(self.usY), str(self.usPhi))
 
 class Line:
 
     def __init__(self):
-	# coord_one and coord_two are two points 
-	# for the line of obstacles
-	self.coord_one = [0.0, 0.0]
-	self.coord_two = [0.0, 0.0]
+        # coord_one and coord_two are two points 
+     ()   # for the line of obstacles
+        self.coord_one = [0.0, 0.0]
+        self.coord_two = [0.0, 0.0]
     
     def find_intersection_with_line(self, line2):
-    	# Method to find intersection between two lines
-    	line1 = (self.coord_one, self.coord_two)
-    	xdiff = (line1[0][0] - line1[1][0], line2[0][0] - line2[1][0])
-    	ydiff = (line1[0][1] - line1[1][1], line2[0][1] - line2[1][1])        
-    	div = det(xdiff, ydiff)
-    	if div == 0:
+        # Method to find intersection between two lines
+        line1 = (self.coord_one, self.coord_two)
+        xdiff = (line1[0][0] - line1[1][0], line2[0][0] - line2[1][0])
+        ydiff = (line1[0][1] - line1[1][1], line2[0][1] - line2[1][1])        
+        div = det(xdiff, ydiff)
+        if div == 0:
             raise Exception('lines do not intersect')
 
-    	d = (det(*line1), det(*line2))
-    	x = det(d, xdiff) / div
-    	y = det(d, ydiff) / div
+        d = (det(*line1), det(*line2))
+        x = det(d, xdiff) / div
+        y = det(d, ydiff) / div
 
-    	# Checking if the intersection point is within the range. line2 is the line made by the robot sensor. 
-    	if x >= line2[0][0] and x <= line2[1][0] and y >= line2[0][1] and y <= line2[1][1]:
-    	    return x, y
-    	else:
-    	    return None
+        # Checking if the intersection point is within the range. line2 is the line made by the robot sensor. 
+        if x >= line2[0][0] and x <= line2[1][0] and y >= line2[0][1] and y <= line2[1][1]:
+            return x, y
+        else:
+            return None
 
     def set_equation(self, x1, y1, x2, y2):
         self.coord_one = [x1, y1]
         self.coord_two = [x2, y2]
-	
+    
     def get_line(self):
-    	return (self.coord_one, self.coord_two)
+        return (self.coord_one, self.coord_two)
     
 def det(a, b):
     return a[0] * b[1] - a[1] * b[0]
@@ -277,6 +279,7 @@ for i in range(N):
 print 'Mean error at start', eval(myrobot, p)
 # show particle's initial locations
 print p
+
 graph_world.show_particles(p, isEvaluated)
 
 for t in range(T):
@@ -295,6 +298,10 @@ for t in range(T):
         w.append(p[i].measurement_prob(Z))
     p3 = []
 
+    if t%3 == 0:
+        graph_world.show_particles(p, isEvaluated)
+        time.sleep(3)
+
 # this is importance sampling code
 
     index = int(random.random() * N)
@@ -310,7 +317,7 @@ for t in range(T):
     
     print 'Mean error',eval(myrobot, p)
 
-graph_world.show_particles(p, isEvaluated=True)
+graph_world.show_particles(p, True)
     
 print ' '
 if eval(myrobot, p) > 0.0:

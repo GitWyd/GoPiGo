@@ -118,8 +118,8 @@ def set_m_line():
 	m_line_y  = robot_x * SLOPE + MLINE_COEFF
 	if m_line_y >= robot_y:
 		MLINE_CROSSER = False
-        else:
-                MLINE_CROSSER = True
+    else:
+        MLINE_CROSSER = True
 # checks if coordinate a has been found in the coordinate history,
 # considering the tolerance to account for real world deviations
 def is_point_in_history(a):
