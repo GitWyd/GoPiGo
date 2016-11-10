@@ -18,7 +18,7 @@ DIST_US = 10
 R_TURN = 0.1
 R_MOVE = 5.0
 
-landmarks = [[20.0, 20.0], [80.0, 80.0], [20.0, 80.0], [80.0, 20.0]]
+landmarks = []
 obstacles = []
 world_x = 0.0
 world_y = 0.0
@@ -250,8 +250,23 @@ T = 50   # number of iterations
 myrobot = robot()
 initialize_world()
 isEvaluated = 0
-graph_world = Maze(world_x, world_y, obstacles[1:])
+print "Landmarks"
+print landmarks
+
+obstacle_bounds = []
+for landmark in landmarks[1:]:
+    x = landmark[0]
+    y = landmark[1]
+    top_right = [x + CONE,y + CONE]
+    top_left = [x - CONE, y + CONE]
+    bottom_right = [x + CONE, y - CONE]
+    bottom_left = [x - CONE, y - CONE]
+
+    obstacle_bounds.append([top_right,top_left,bottom_left,bottom_right])
+
+graph_world = Maze(world_x, world_y, obstacle_bounds)
 graph_world.draw()
+graph_world.show_robot(myrobot)
 
 p = [] # list of particles
 for i in range(N):
@@ -262,7 +277,7 @@ for i in range(N):
 print 'Mean error at start', eval(myrobot, p)
 # show particle's initial locations
 print p
-graph_world.showParticles(particles, isEvaluated)
+graph_world.show_particles(p, isEvaluated)
 
 for t in range(T):
 #    print p
@@ -295,7 +310,7 @@ for t in range(T):
     
     print 'Mean error',eval(myrobot, p)
 
-graph_world.showParticles(particles, isEvaluated=True)
+graph_world.show_particles(p, isEvaluated=True)
     
 print ' '
 if eval(myrobot, p) > 0.0:
