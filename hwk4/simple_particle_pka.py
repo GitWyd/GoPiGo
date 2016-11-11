@@ -14,11 +14,11 @@ from GoPiGoModel import getNewRobotLocation
 # ENVIRONMENT / ROBOT CONSTANTS 
 CONE = 5.7
 NOISE_FWD = 0.05
-NOISE_ROT = 0.05
-NOISE_US  = 1.3
+NOISE_ROT = 0.025
+NOISE_US  = 1.05
 DIST_US = 7
-R_TURN = 0.3926991 * 2
-R_MOVE = 3.4 * 2
+R_TURN = 0.4
+R_MOVE = 3.4
 
 landmarks = []
 obstacles = []
@@ -34,12 +34,6 @@ def set_environment_boundaries(x,y):
     line3 = Line()
     line4 = Line() 
     line5 = Line()
-    myrobot = robot()
-    myrobot.x = 0.0
-    myrobot.y = 0.0
-    myrobot.coord_one = [82.583, 76.218]
-    myrobot.orientation = 2.0912;
-    myrobot.set_angle_line(np.deg2rad(90))
     line1.set_equation(0, 0, x, 0) # x axis
     line2.set_equation(0, 0, 0, y) # y axis
     line3.set_equation(x, 0, x, y) # perpendicular to x, || to y
@@ -223,7 +217,7 @@ class robot:
         obstacle_bool = False
         bounds_bool = False
         readings = self.virtual_scan()
-        dist = min(readings[3:6])
+        dist = readings[4]
         # print(str(dist))
         if dist <= ( R_MOVE + self.forward_noise*3 ):
             obstacle_bool = False
@@ -249,12 +243,11 @@ class robot:
         prob = 1.0;
         for i in range(len(measurement)):
             dist = prtcl_measurements[i]
-            p = self.Gaussian(dist, self.sense_noise, measurement[i]) 
-            # if (dist-measurement[i]<=19):
-            #     prob *= p
-            # else:
-            #     prob *= self.Gaussian(0, self.sense_noise, 25) 
-            prob += p
+            p = self.Gaussian(measurement[i], self.sense_noise, dist) 
+            if (dist-measurement[i] <= 19):
+                prob += p
+            else:
+                prob += self.Gaussian(1, self.sense_noise, 50) 
 
 
             #     prob *= 0.0000000000000001 
@@ -320,13 +313,11 @@ def initialize():
     print 'in initialize'
 
 # --------
-N = 1500 # number of particles
+N = 3000 # number of particles
 T = 80  # number of iterations
 
 initialize_world()
-isEvaluated = 0
-print "Landmarks"
-print landmarks
+isEvaluated = False
 
 obstacle_bounds = []
 for landmark in landmarks[1:]:
@@ -391,13 +382,15 @@ for t in range(T):
     index = int(random.random() * N)
     beta = 0.0 # what is beta
     mw = max(w)
+    sum_w = sum(weight for weight in w)
 
     for i in range(len(w)):
         w[i] = w[i]/mw
     # print 'mw ' + str(mw)
+    mw = max(w)
     for i in range(N):
 
-        beta += random.random() * 2 * mw
+        beta += random.random() * 3 * mw
         # print 'w ' + str(w[1:3])
         # print 'mw ' + str(mw)
         # print 'beta ' + str(beta)
@@ -411,7 +404,7 @@ for t in range(T):
         p3.append(p[index])
     p = p3
 
-    if t%8 == 0:
+    if t%2 == 0:
         graph_world.show_particles(p, w, isEvaluated)
         graph_world.show_robot(myrobot)
         time.sleep(2)   

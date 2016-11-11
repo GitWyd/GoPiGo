@@ -64,11 +64,10 @@ class Maze(object):
         turtle.setheading(np.rad2deg(mean_orient)) 
         turtle.shape("turtle")
         turtle.stamp()
+
     def weight_to_color(self, weight):
-        #print "weight" + str(weight)
-        #print "Color change"
-        #print "#%02x00%02x" % (int(weight * 255) , int((1 - weight) * 255))
         return "#%02x00%02x" % (int(weight * 255) , int((1 - weight) * 255))
+
     def show_particles(self, particles, weights, is_evaluated):
         turtle.clearstamps()
         turtle.color("blue")
@@ -85,8 +84,8 @@ class Maze(object):
             sum_orient += particle.orientation 
         for i in range(0,len(particles), 10):
             turtle.setposition(particles[i].x, particles[i].y)
-            turtle.setheading(np.rad2deg(particles[i].orientation)) # Need to confirm angle adjustment based on values in the main file
-            turtle.color(self.weight_to_color(weights[i])) # need to check this with the original file
+            turtle.setheading(np.rad2deg(particles[i].orientation)) 
+            turtle.color(self.weight_to_color(weights[i])) 
             turtle.stamp()
 
         mean_x = sum_x/float(len(particles))
