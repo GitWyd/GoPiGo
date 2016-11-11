@@ -74,35 +74,34 @@ class Maze(object):
         turtle.clearstamps()
         turtle.color("blue")
         turtle.shape("particle")
-        sum_wx = 0
-        sum_wy = 0
+        sum_x = 0
+        sum_y = 0
         mean_x = 0 
         mean_y = 0
-        sum_w_orient = 0
+        sum_orient = 0
         count = 0
-        sumw = sum(weights)
-        # for particle in particles: 
-        #     sum_x += particle.x
-        #     sum_y += particle.y
-        #     sum_orient += particle.orientation
+        for particle in particles: 
+            sum_x += particle.x
+            sum_y += particle.y
+            sum_orient += particle.orientation
 
         for i in range(0,len(particles), 10):
             turtle.setposition(offsetx + scale * particles[i].x, offsety + scale * particles[i].y)
             turtle.setheading(np.rad2deg(particles[i].orientation)) 
             turtle.color(self.weight_to_color(weights[i])) 
             turtle.stamp()
-        if not sumw:
-            for i in range(len(weights)):
-            	weights[i] = 1/float(len(weights))
-        sumw = sum(weights)
-        for i in range(0,len(particles), 10): 
-        	sum_wx += particles[i].x * weights[i]
-        	sum_wy += particles[i].y * weights[i]
-        	sum_w_orient += particles[i].orientation * weights[i]
+        # if not sumw:
+        #     for i in range(len(weights)):
+        #     	weights[i] = 1/float(len(weights))
+        # sumw = sum(weights)
+        # for i in range(0,len(particles), 10): 
+        # 	sum_x += particles[i].x
+        # 	sum_y += particles[i].y
+        # 	sum_w_orient += particles[i].orientation * weights[i]
 
-        mean_x = sum_wx/sumw
-        mean_y = sum_wy/sumw
-        mean_orient = sum_w_orient/sumw
+        mean_x = sum_x/float(len(particles))
+        mean_y = sum_y/float(len(particles))
+        mean_orient = sum_orient/float(len(particles))
 
         self.show_mean(mean_x, mean_y, mean_orient, is_evaluated)
         turtle.update()

@@ -11,18 +11,6 @@ import numpy as np
 import random
 from draw_world import Maze
 from GoPiGoModel import getNewRobotLocation
-# from gopigo import *
-
-# REAL ROBOT CONSTANTS
-DIST_OBSTACLE = 15 
-US_MAX_DIST = 300                           
-US_PIN = 15                                       
-ROTATE_SPEED = 50
-SPEED = 100
-TIME_INCREMENTS = 0.20
-WHEEL_CIRCUMFERENCE = 20.4                        
-ENCODER_PPR = 18 # Pulses Per Revolution          
-
 
 # ENVIRONMENT / ROBOT CONSTANTS 
 CONE = 5.7
@@ -231,25 +219,21 @@ class robot:
         obstacle_bool = False
         bounds_bool = False
         readings = self.virtual_scan()
-        dist = readings[4]
+        dist = min(readings[3:6])
+        maxMove = R_MOVE + self.forward_noise*3 
         # print(str(dist))
-        if dist <= ( R_MOVE + self.forward_noise*3 ):
+        if dist <= maxMove:
             obstacle_bool = False
         else:
             obstacle_bool = True
         if self.isRobot:
-            dist = float(R_MOVE) + 3 * self.forward_noise
-            x = self.x + (cos(self.orientation) * dist)
-            y = self.y + (sin(self.orientation) * dist)
+            x = self.x + (cos(self.orientation) * maxMove)
+            y = self.y + (sin(self.orientation) * maxMove)
             if x < 0 or x >= world_x:
                      return False
             if y < 0 or y >= world_y:
                     return False
         return obstacle_bool
-
-    def is_robot_path_clear(self):
-        servo(90)
-        return R_MOVE < us_dist(15)
 
     def Gaussian(self, mu, sigma, x):
         # calculates the probability of x for 1-dim Gaussian with mean mu and var. sigma
@@ -282,74 +266,6 @@ class robot:
         #print 'prob ' + str(prob)
         # prob = np.log(2, prob)
         return prob
-    def robot_measurements(self):
-        enable_servo()
-        measurements = []
-        for i in range(0,180,20):
-            dist = 200
-            servo(i)
-            if (dist > us_dist(15)):
-                dist = us_dist(15)
-            measurements.append(dist)
-        return measurements    
-    def move_robot(self, turn, forward):
-        x = self.x
-        y = self.y
-        orientation = self.orientation
-        if turn:
-            # turn, and add randomness to the turning command
-            self.rotate_left(turn)
-
-#        if self.isRobot:
-        if forward:
-            # move, and add randomness to the motion command
-            dist = float(forward) + random.gauss(0.0, self.forward_noise)
-            self.go_forward(dist)
-
-    def go_forward(self, distance):
-        set_speed(SPEED)
-        pulse = self.cm2pulse(distance)
-        if pulse == 0:
-            return
-            enc_tgt(1,1,pulse)
-            fwd()
-            time.sleep(1)
-        # new_robot_world_location = model.getNewRobotLocation(distance,old_robot_location,0)
-        dist = float(distance) + random.gauss(0.0, self.forward_noise)
-        x = self.x + (cos(orientation) * dist)
-        y = self.y + (sin(orientation) * dist)
-        self.set(x, y, self.orientation)
-
-    def cm2pulse(self, distance):
-        distToWheelRatio = float(distance / WHEEL_CIRCUMFERENCE)
-        encoder_counts = int(distToWheelRatio*ENCODER_PPR)
-        return encoder_counts
-
-    def rotate_left(self, angle):
-        pulse = int (angle/DPR)
-        pulse /= 2
-        if not pulse:
-            return
-        # update robot location
-        orientation = self.orientation + float(angle) + random.gauss(0.0, self.turn_noise)
-        orientation %= 2 * pi
-        self.set(self.x, self.y, orientation)
-        enc_tgt(1,1, pulse)
-        left_rot()
-        time.sleep(1)
-
-    def rotate_right(self, angle):
-        pulse = int (angle/DPR)
-        pulse /= 2
-        if not pulse:
-            return
-        # update robot location
-        orientation = self.orientation + float(angle) + random.gauss(0.0, self.turn_noise)
-        orientation %= 2 * pi
-        self.set(self.x, self.y, orientation)
-        enc_tgt(1,1, pulse)
-        right_rot()
-        time.sleep(1)
     def __repr__(self):
         return '\n\t[x=%.6s y=%.6s orient=%.6s] \n\t[usX=%.6s usY=%.6s usPhi=%.6s]' % (str(self.x), str(self.y), str(self.orientation), str(self.usX), str(self.usY), str(self.usPhi))
 
