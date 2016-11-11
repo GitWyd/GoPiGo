@@ -55,16 +55,21 @@ class Maze(object):
         turtle.home()
         turtle.update()
 
-    def show_mean(self, mean_x, mean_y, is_evaluated):
+    def show_mean(self, mean_x, mean_y, mean_orient, is_evaluated):
         if is_evaluated:
             turtle.color("green")
         else:
             turtle.color("gray")
         turtle.setposition(mean_x, mean_y)
-        turtle.shape("circle")
+        turtle.setheading(np.rad2deg(mean_orient)) 
+        turtle.shape("turtle")
         turtle.stamp()
-
-    def show_particles(self, particles, is_evaluated):
+    def weight_to_color(self, weight):
+        #print "weight" + str(weight)
+        #print "Color change"
+        #print "#%02x00%02x" % (int(weight * 255) , int((1 - weight) * 255))
+        return "#%02x00%02x" % (int(weight * 255) , int((1 - weight) * 255))
+    def show_particles(self, particles, weights, is_evaluated):
         turtle.clearstamps()
         turtle.color("blue")
         turtle.shape("particle")
@@ -72,20 +77,23 @@ class Maze(object):
         sum_y = 0
         mean_x = 0 
         mean_y = 0
+        sum_orient = 0
         count = 0
-        for particle in particles:
-        	sum_x += particle.x
-        	sum_y += particle.y
+        for particle in particles: 
+            sum_x += particle.x
+            sum_y += particle.y
+            sum_orient += particle.orientation 
         for i in range(0,len(particles), 10):
             turtle.setposition(particles[i].x, particles[i].y)
             turtle.setheading(np.rad2deg(particles[i].orientation)) # Need to confirm angle adjustment based on values in the main file
-            # turtle.color(self.weight_to_color(particle.weight)) # need to check this with the original file
+            turtle.color(self.weight_to_color(weights[i])) # need to check this with the original file
             turtle.stamp()
 
         mean_x = sum_x/float(len(particles))
         mean_y = sum_y/float(len(particles))
+        mean_orient = sum_orient/float(len(particles))
 
-        self.show_mean(mean_x, mean_y, is_evaluated)
+        self.show_mean(mean_x, mean_y, mean_orient, is_evaluated)
         turtle.update()
 
     def show_robot(self, robot):
