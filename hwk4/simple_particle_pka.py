@@ -11,7 +11,7 @@ import numpy as np
 import random
 from draw_world import Maze
 from GoPiGoModel import getNewRobotLocation
-from gopigo import *
+# from gopigo import *
 
 # REAL ROBOT CONSTANTS
 DIST_OBSTACLE = 15 
