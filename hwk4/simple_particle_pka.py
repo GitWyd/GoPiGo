@@ -252,7 +252,7 @@ class robot:
             if y < 0 or y >= world_y:
                     return False
         return obstacle_bool
-        
+
     def is_robot_path_clear(self):
         servo(90)
         return R_MOVE < us_dist(15)
@@ -290,7 +290,7 @@ class robot:
         for i in range(0,180,20):
             dist = 200
             servo(i)
-            if (dist > us_dist(15))
+            if (dist > us_dist(15)):
                 dist = us_dist(15)
             measurements.append(dist)
         return measurements    
@@ -309,14 +309,14 @@ class robot:
             self.go_forward(dist)
 
     def go_forward(self, distance):
-         set_speed(SPEED)
-         pulse = self.cm2pulse(distance)
-         if pulse == 0:
+        set_speed(SPEED)
+        pulse = self.cm2pulse(distance)
+        if pulse == 0:
             return
             enc_tgt(1,1,pulse)
             fwd()
             time.sleep(1)
-       # new_robot_world_location = model.getNewRobotLocation(distance,old_robot_location,0)
+        # new_robot_world_location = model.getNewRobotLocation(distance,old_robot_location,0)
         dist = float(distance) + random.gauss(0.0, self.forward_noise)
         x = self.x + (cos(orientation) * dist)
         y = self.y + (sin(orientation) * dist)
@@ -501,7 +501,7 @@ for t in range(T):
         p3.append(p[index])
     p = p3
 
-    if t%2 == 0:
+    if t%10 == 0:
         graph_world.show_particles(p, w, isEvaluated)
         graph_world.show_robot(myrobot)
         time.sleep(2)   
