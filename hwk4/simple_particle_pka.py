@@ -7,6 +7,7 @@
 import time
 from turtle import *
 from math import *
+import numpy as np
 import random
 from draw_world import Maze
 from GoPiGoModel import getNewRobotLocation
@@ -31,15 +32,47 @@ def set_environment_boundaries(x,y):
     line1 = Line() 
     line2 = Line() 
     line3 = Line()
-    line4 = Line()
+    line4 = Line() 
+    line5 = Line()
+    myrobot = robot()
+    myrobot.x = 0.0
+    myrobot.y = 0.0
+    myrobot.coord_one = [82.583, 76.218]
+    myrobot.orientation = 2.0912;
+    myrobot.set_angle_line(np.deg2rad(90))
     line1.set_equation(0, 0, x, 0) # x axis
     line2.set_equation(0, 0, 0, y) # y axis
     line3.set_equation(x, 0, x, y) # perpendicular to x, || to y
     line4.set_equation(0, y, x, y) # perpendicular to y, || to x
+    line5.set_equation(0, 0, 1, 1)
     lines.append(line1)
     lines.append(line2)
     lines.append(line3)
     lines.append(line4)
+
+    intersection_point = line1.find_intersection_with_line(myrobot.get_angle_line())
+    if intersection_point:
+        print 'found ' + str(intersection_point[0]) + ' ' + str(intersection_point[1])
+    else:
+        print 'fucked up logic of intersection'
+
+    intersection_point = line2.find_intersection_with_line(myrobot.get_angle_line())
+    if intersection_point:
+        print 'found ' + str(intersection_point[0]) + ' ' + str(intersection_point[1])
+    else:
+        print 'fucked up logic of intersection'
+
+    intersection_point = line3.find_intersection_with_line(myrobot.get_angle_line())
+    if intersection_point:
+        print 'found ' + str(intersection_point[0]) + ' ' + str(intersection_point[1])
+    else:
+        print 'fucked up logic of intersection'
+
+    intersection_point = line4.find_intersection_with_line(myrobot.get_angle_line())
+    if intersection_point:
+        print 'found ' + str(intersection_point[0]) + ' ' + str(intersection_point[1])
+    else:
+        print 'fucked up logic of intersection'
 
 def set_cone_boundaries(x, y):
     # setting the boundaries of the cone as lines
@@ -57,6 +90,8 @@ def set_cone_boundaries(x, y):
     lines.append(line3)
     lines.append(line4)
 
+
+
 def initialize_world():
     global obstacles
     obstacles = [obstacle.rstrip('\n') for obstacle in open('obstacles.txt')] 
@@ -64,7 +99,7 @@ def initialize_world():
     global world_y
     world_x = float(obstacles[0].split()[0])
     world_y = float(obstacles[0].split()[1])
-    print 'world x,y ', world_x, ' ', world_y 
+    print 'world x,y ', world_x, ' ', world_y
     # generate lines of env. borders 
     set_environment_boundaries(world_x, world_y) 
     # generate lines of obstacles / cones
@@ -74,7 +109,7 @@ def initialize_world():
         print 'landmark x and y ', x, ' ', y
         set_cone_boundaries(x, y) # consider renaming
         global landmarks
-        landmarks.append([x,y])
+        landmarks.append([x, y])
     print_lines_landmarks()
 
 # prints lines and landmarks
@@ -98,9 +133,9 @@ class robot:
         self.usY = self.y + DIST_US * sin(self.orientation)
         self.usPhi = self.orientation - pi/2
         # define noise variables
-        self.forward_noise = 0.0;
-        self.turn_noise = 0.0;
-        self.sense_noise = 0.0;
+        self.forward_noise = 0.05;
+        self.turn_noise = 0.05;
+        self.sense_noise = 2.5;
         # adding these to conform with the functions added.
         # coord_one and coord_two are two points on the imaginary
         # line made by the US sensor
@@ -108,17 +143,27 @@ class robot:
         self.coord_two = [0.0, 0.0]
         self.angle_line = (self.coord_one,self.coord_two)
 
-    def set_angle_line(angle):
-        print "Setting angle equation"
+    def set_angle_line(self, angle):
+        # print "Setting angle equation"
         orientation_to_world_angle = self.orientation - pi / 2
+
+        # print 'orientation ' + str(self.orientation)
+        # print 'angle ' + str(angle)
         us_angle = orientation_to_world_angle + angle
+        # print 'us_angle ' + str(us_angle)
         self.usPhi = us_angle
         # Finding out new point on line created by us sensor and the
         # beam it emits out. Formula is x = old_x + cos(theta).
-        new_x = self.x + 2 * cos(us_angle)
-        new_y = self.y + 2 * sin(us_angle)
+        new_x = self.coord_one[0] + 2 * cos(self.usPhi)
+        new_y = self.coord_one[1] + 2 * sin(self.usPhi)
+        # print 'x and y' + str(self.x) + str(self.y)
         self.coord_two = [new_x, new_y]
+        # print 'coord_two ' + str(self.coord_two)
+        # print 'coord_one ' + str(self.coord_one)
         self.angle_line = (self.coord_one, self.coord_two)
+
+    def get_angle_line(self):
+        return (self.coord_one, self.coord_two)
     
     def set(self, new_x, new_y, new_orientation):
         if new_x < 0 or new_x >= world_x:
@@ -150,10 +195,11 @@ class robot:
         # Iterating through the angles (at every 20 degrees)
         for i in range(0,180,20):
             # servo(i) for actual robot
-            min_dist = float("inf")
+            self.set_angle_line(np.deg2rad(i))
+            min_dist = 200
             for j in range(len(lines)):
                 # finding intersection points and only storing the least
-                intersection_point = lines[j].find_intersection_with_line(self.angle_line)
+                intersection_point = lines[j].find_intersection_with_line(self.get_angle_line())
                 if intersection_point: 
                     dist = sqrt((self.x - intersection_point[0]) ** 2 + (self.y - intersection_point[1]) ** 2)
                     dist += random.gauss(0.0, self.sense_noise)
@@ -191,14 +237,15 @@ class robot:
         prob = 1.0;
         for i in range(len(measurement)):
             dist = prtcl_measurements[i]
-            prob *= self.Gaussian(dist, self.sense_noise, measurement[i])
+            # print 'dist ' + str(dist)
+            prob += self.Gaussian(dist, self.sense_noise, measurement[i])
+            # print 'prob ' + str(prob)
         return prob
  
     def __repr__(self):
         return '\n\t[x=%.6s y=%.6s orient=%.6s] \n\t[usX=%.6s usY=%.6s usPhi=%.6s]' % (str(self.x), str(self.y), str(self.orientation), str(self.usX), str(self.usY), str(self.usPhi))
 
 class Line:
-
     def __init__(self):
         # coord_one and coord_two are two points 
         # for the line of obstacles
@@ -212,14 +259,16 @@ class Line:
         ydiff = (line1[0][1] - line1[1][1], line2[0][1] - line2[1][1])        
         div = det(xdiff, ydiff)
         if div == 0:
-            raise Exception('lines do not intersect')
+            print 'div 0'
+            return None
 
         d = (det(*line1), det(*line2))
         x = det(d, xdiff) / div
         y = det(d, ydiff) / div
 
         # Checking if the intersection point is within the range. line2 is the line made by the robot sensor. 
-        if x >= line2[0][0] and x <= line2[1][0] and y >= line2[0][1] and y <= line2[1][1]:
+        if (((x >= line1[0][0] and x <= line1[1][0]) or (x <= line1[0][0] and x >= line1[1][0])) \
+            and ((y >= line1[0][1] and y <= line1[1][1]) or (y <= line1[0][1] and y >= line1[1][1]))):
             return x, y
         else:
             return None
@@ -248,9 +297,9 @@ def initialize():
     print 'in initialize'
 
 # --------
-N = 1000 # number of particles
+N = 6000 # number of particles
 T = 50   # number of iterations
-myrobot = robot()
+
 initialize_world()
 isEvaluated = 0
 print "Landmarks"
@@ -269,17 +318,17 @@ for landmark in landmarks[1:]:
 
 graph_world = Maze(world_x, world_y, obstacle_bounds)
 graph_world.draw()
-graph_world.show_robot(myrobot)
 
-p = [] # list of particles
+p = [] # list of particlesw
 for i in range(N):
     r = robot()
     r.set_noise(0.05, 0.05, 5.0) # provided noise.
     p.append(r)
-    
+myrobot = robot()
+myrobot.set_noise(0.05, 0.05, 5.0)   
 print 'Mean error at start', eval(myrobot, p)
 # show particle's initial locations
-print p
+# print p
 
 graph_world.show_particles(p, isEvaluated)
 graph_world.show_robot(myrobot)
@@ -300,31 +349,36 @@ for t in range(T):
         w.append(p[i].measurement_prob(Z))
     p3 = []
 
-    if t%3 == 0:
-        graph_world.show_particles(p, isEvaluated)
-        time.sleep(3)
-
 # this is importance sampling code
 
     index = int(random.random() * N)
     beta = 0.0 # what is beta
     mw = max(w)
+    # print 'mw ' + str(mw)
     for i in range(N):
-        beta += random.random() * 2.0 * mw
+        abc_random = random.random()
+        beta += abc_random * 2.0 * mw
+        # print 'w ' + str(w[1:3])
+        # print 'mw ' + str(mw)
+        # print 'beta ' + str(beta)
         while beta > w[index]:
+            #print "Index should increase and beta should decrease " + str(beta)+ " " + str(index)
             beta -= w[index]
             index = (index + 1) % N
+        #print 'robot current location: ' + str(myrobot.x) +" " +str(myrobot.y)
+        #print 'particle added: ' + str(p[index])
         p3.append(p[index])
     p = p3
+
+    if t%3 == 0:
+        graph_world.show_particles(p, isEvaluated)
+        graph_world.show_robot(myrobot)
+        time.sleep(2)   
     
     print 'Mean error',eval(myrobot, p)
 
 graph_world.show_particles(p, True)
-
-isEvaluated = True
-graph_world.show_particles(p, isEvaluated)
 graph_world.show_robot(myrobot)
-exitonclick()
     
 print ' '
 if eval(myrobot, p) > 0.0:
@@ -332,3 +386,4 @@ if eval(myrobot, p) > 0.0:
         print 'Final particle #', i*100, p[i*100]
     print ' '
     print 'Actual Robot Location', myrobot
+    exitonclick()

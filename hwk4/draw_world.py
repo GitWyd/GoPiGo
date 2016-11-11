@@ -45,7 +45,7 @@ class Maze(object):
 
     def draw(self):
     	turtle.tracer(80000, delay=0) 
-        turtle.register_shape("dot", ((-3,-3), (-3,3), (3,3), (3,-3)))
+        turtle.register_shape("dot", ((-1,-1), (-1,1), (1,1), (1,-1)))
         turtle.register_shape("particle", ((-3, -2), (0, 3), (3, -2), (0, 0)))
         turtle.speed(0)
         
