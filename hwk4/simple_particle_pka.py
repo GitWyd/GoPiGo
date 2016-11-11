@@ -264,7 +264,7 @@ class robot:
         for i in range(len(measurement)):
             dist = prtcl_measurements[i]
             p = self.Gaussian(measurement[i], self.sense_noise, dist) 
-            if (dist-measurement[i] <= 19):
+            if (dist - measurement[i] <= 15):
                 prob += p
             else:
                 prob += self.Gaussian(1, self.sense_noise, 50) 
