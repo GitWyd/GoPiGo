@@ -27,7 +27,7 @@ ENCODER_PPR = 18 # Pulses Per Revolution
 # ENVIRONMENT / ROBOT CONSTANTS 
 CONE = 5.7
 NOISE_FWD = 0.05
-NOISE_ROT = 0.025
+NOISE_ROT = 0.05
 NOISE_US  = 1.05
 DIST_US = 7
 R_TURN = 0.4
@@ -231,7 +231,7 @@ class robot:
         obstacle_bool = False
         bounds_bool = False
         readings = self.virtual_scan()
-        dist = readings[4]
+        dist = min(readings[3:6])
         # print(str(dist))
         if dist <= ( R_MOVE + self.forward_noise*3 ):
             obstacle_bool = False
@@ -248,6 +248,7 @@ class robot:
         return obstacle_bool
 
     def is_robot_path_clear(self):
+        enable_servo()
         servo(90)
         return R_MOVE < us_dist(15)
 
@@ -264,15 +265,11 @@ class robot:
         for i in range(len(measurement)):
             dist = prtcl_measurements[i]
             p = self.Gaussian(measurement[i], self.sense_noise, dist) 
-            if (dist-measurement[i] <= 19):
-                prob += p
-            else:
-                prob += self.Gaussian(1, self.sense_noise, 50) 
             # if (dist-measurement[i]<=19):
             #     prob *= p
             # else:
             #     prob *= self.Gaussian(0, self.sense_noise, 25) 
-
+            prob += p
 
 
             #     prob *= 0.0000000000000001 
@@ -282,16 +279,19 @@ class robot:
         #print 'prob ' + str(prob)
         # prob = np.log(2, prob)
         return prob
+
     def robot_measurements(self):
         enable_servo()
         measurements = []
         for i in range(0,180,20):
             dist = 200
             servo(i)
+            time.sleep(2)
             if (dist > us_dist(15)):
                 dist = us_dist(15)
             measurements.append(dist)
         return measurements    
+
     def move_robot(self, turn, forward):
         x = self.x
         y = self.y
@@ -305,6 +305,9 @@ class robot:
             # move, and add randomness to the motion command
             dist = float(forward) + random.gauss(0.0, self.forward_noise)
             self.go_forward(dist)
+            
+        time.sleep(3)
+        return self
 
     def go_forward(self, distance):
         set_speed(SPEED)
@@ -316,8 +319,8 @@ class robot:
             time.sleep(1)
         # new_robot_world_location = model.getNewRobotLocation(distance,old_robot_location,0)
         dist = float(distance) + random.gauss(0.0, self.forward_noise)
-        x = self.x + (cos(orientation) * dist)
-        y = self.y + (sin(orientation) * dist)
+        x = self.x + (cos(self.orientation) * dist)
+        y = self.y + (sin(self.orientation) * dist)
         self.set(x, y, self.orientation)
 
     def cm2pulse(self, distance):
@@ -405,11 +408,13 @@ def initialize():
     print 'in initialize'
 
 # --------
-N = 3000 # number of particles
+N = 150 # number of particles
 T = 80  # number of iterations
 
 initialize_world()
-isEvaluated = False
+isEvaluated = 0
+print "Landmarks"
+print landmarks
 
 obstacle_bounds = []
 for landmark in landmarks[1:]:
@@ -432,6 +437,8 @@ for i in range(N):
 
 myrobot = robot()
 myrobot.isRobot = True
+# set robot location
+myrobot.set(100.0, 220.0, pi/2)
 myrobot.set_noise(NOISE_FWD, NOISE_ROT, NOISE_US)
 
 print 'Mean error at start', eval(myrobot, p)
@@ -449,12 +456,12 @@ for t in range(T):
 #    print p
     # if there is an obstacle then turn
     # otherwise move forward
-    clearPath = myrobot.is_path_clear()
+    clearPath = myrobot.is_robot_path_clear()
     if clearPath:
-        myrobot= myrobot.move(0, R_MOVE)
+        myrobot= myrobot.move_robot(0, R_MOVE)
     else:
-        myrobot = myrobot.move(R_TURN, 0)
-    Z = myrobot.virtual_scan()
+        myrobot = myrobot.move_robot(R_TURN, 0)
+    Z = myrobot.robot_measurements()
     
     # move all robots by the same as the actual robot 
     p_temp = []
@@ -477,15 +484,13 @@ for t in range(T):
     index = int(random.random() * N)
     beta = 0.0 # what is beta
     mw = max(w)
-    sum_w = sum(weight for weight in w)
 
     for i in range(len(w)):
         w[i] = w[i]/mw
     # print 'mw ' + str(mw)
-    mw = max(w)
     for i in range(N):
 
-        beta += random.random() * 3 * mw
+        beta += random.random() * 2 * mw
         # print 'w ' + str(w[1:3])
         # print 'mw ' + str(mw)
         # print 'beta ' + str(beta)
@@ -499,7 +504,7 @@ for t in range(T):
         p3.append(p[index])
     p = p3
 
-    if t%2 == 0:
+    if t%10 == 0:
         graph_world.show_particles(p, w, isEvaluated)
         graph_world.show_robot(myrobot)
         time.sleep(2)   
