@@ -206,7 +206,7 @@ class robot:
         obstacle_bool = False
         bounds_bool = False
         readings = self.virtual_scan()
-        dist = min(readings[3:6])
+        dist = min(readings[2:7])
         # print(str(dist))
         if dist <= ( R_MOVE + self.forward_noise*3 ):
             obstacle_bool = False

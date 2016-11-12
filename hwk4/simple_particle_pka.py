@@ -224,12 +224,9 @@ class robot:
         for i in range(len(measurement)):
             dist = prtcl_measurements[i]
             p = self.Gaussian(measurement[i], self.sense_noise, dist) 
-            if (dist - measurement[i] <= 15):
-                prob += p
-            else:
-                prob += self.Gaussian(1, self.sense_noise, 50) 
-
+            prob += p
         return prob
+        
     def __repr__(self):
         return '\n\t[x=%.6s y=%.6s orient=%.6s] \n\t[usX=%.6s usY=%.6s usPhi=%.6s]' % (str(self.x), str(self.y), str(self.orientation), str(self.usX), str(self.usY), str(self.usPhi))
 
