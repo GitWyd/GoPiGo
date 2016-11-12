@@ -16,9 +16,9 @@ from GoPiGoModel import getNewRobotLocation
 CONE = 5.7
 NOISE_FWD = 0.05
 NOISE_ROT = 0.025
-NOISE_US  = 1.05
+NOISE_US  = 1.1
 DIST_US = 7
-R_TURN = 0.4
+R_TURN = 0.5
 R_MOVE = 3.4
 
 landmarks = []
@@ -44,30 +44,6 @@ def set_environment_boundaries(x,y):
     lines.append(line2)
     lines.append(line3)
     lines.append(line4)
-
-    # intersection_point = line1.find_intersection_with_line(myrobot.get_angle_line())
-    # if intersection_point:
-    #     print 'found ' + str(intersection_point[0]) + ' ' + str(intersection_point[1])
-    # else:
-    #     print 'fucked up logic of intersection'
-
-    # intersection_point = line2.find_intersection_with_line(myrobot.get_angle_line())
-    # if intersection_point:
-    #     print 'found ' + str(intersection_point[0]) + ' ' + str(intersection_point[1])
-    # else:
-    #     print 'fucked up logic of intersection'
-
-    # intersection_point = line3.find_intersection_with_line(myrobot.get_angle_line())
-    # if intersection_point:
-    #     print 'found ' + str(intersection_point[0]) + ' ' + str(intersection_point[1])
-    # else:
-    #     print 'fucked up logic of intersection'
-
-    # intersection_point = line4.find_intersection_with_line(myrobot.get_angle_line())
-    # if intersection_point:
-    #     print 'found ' + str(intersection_point[0]) + ' ' + str(intersection_point[1])
-    # else:
-    #     print 'fucked up logic of intersection'
 
 def set_cone_boundaries(x, y):
     # setting the boundaries of the cone as lines
@@ -252,19 +228,7 @@ class robot:
                 prob += p
             else:
                 prob += self.Gaussian(1, self.sense_noise, 50) 
-            # if (dist-measurement[i]<=19):
-            #     prob *= p
-            # else:
-            #     prob *= self.Gaussian(0, self.sense_noise, 25) 
 
-
-
-            #     prob *= 0.0000000000000001 
-            #print 'dist ' + str(dist) + '\t meas[i]' + str(measurement[i]) + '\t prob' + str(prob)
-        #     if probability:
-        #        prob += math.log(probability, 2)
-        #print 'prob ' + str(prob)
-        # prob = np.log(2, prob)
         return prob
     def __repr__(self):
         return '\n\t[x=%.6s y=%.6s orient=%.6s] \n\t[usX=%.6s usY=%.6s usPhi=%.6s]' % (str(self.x), str(self.y), str(self.orientation), str(self.usX), str(self.usY), str(self.usPhi))
@@ -393,11 +357,9 @@ for t in range(T):
     index = int(random.random() * N)
     beta = 0.0 # what is beta
     mw = max(w)
-    sum_w = sum(weight for weight in w)
 
     for i in range(len(w)):
         w[i] = w[i]/mw
-    # print 'mw ' + str(mw)
     mw = max(w)
     for i in range(N):
 
@@ -415,7 +377,7 @@ for t in range(T):
         p3.append(p[index])
     p = p3
 
-    if t%2 == 0:
+    if t%8 == 0:
         graph_world.show_particles(p, w, isEvaluated)
         graph_world.show_robot(myrobot)
         time.sleep(2)   
