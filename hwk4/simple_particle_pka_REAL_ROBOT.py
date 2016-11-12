@@ -57,30 +57,6 @@ def set_environment_boundaries(x,y):
     lines.append(line3)
     lines.append(line4)
 
-    # intersection_point = line1.find_intersection_with_line(myrobot.get_angle_line())
-    # if intersection_point:
-    #     print 'found ' + str(intersection_point[0]) + ' ' + str(intersection_point[1])
-    # else:
-    #     print 'fucked up logic of intersection'
-
-    # intersection_point = line2.find_intersection_with_line(myrobot.get_angle_line())
-    # if intersection_point:
-    #     print 'found ' + str(intersection_point[0]) + ' ' + str(intersection_point[1])
-    # else:
-    #     print 'fucked up logic of intersection'
-
-    # intersection_point = line3.find_intersection_with_line(myrobot.get_angle_line())
-    # if intersection_point:
-    #     print 'found ' + str(intersection_point[0]) + ' ' + str(intersection_point[1])
-    # else:
-    #     print 'fucked up logic of intersection'
-
-    # intersection_point = line4.find_intersection_with_line(myrobot.get_angle_line())
-    # if intersection_point:
-    #     print 'found ' + str(intersection_point[0]) + ' ' + str(intersection_point[1])
-    # else:
-    #     print 'fucked up logic of intersection'
-
 def set_cone_boundaries(x, y):
     # setting the boundaries of the cone as lines
     global lines
@@ -213,7 +189,6 @@ class robot:
             orientation = self.orientation + float(turn) + random.gauss(0.0, self.turn_noise)
             orientation %= 2 * pi
 
-#        if self.isRobot:
         if forward:
             # move, and add randomness to the motion command
             dist = float(forward) + random.gauss(0.0, self.forward_noise)
@@ -316,7 +291,7 @@ class robot:
             return
             enc_tgt(1,1,pulse)
             fwd()
-            time.sleep(1)
+            time.sleep(1*pulse)
         # new_robot_world_location = model.getNewRobotLocation(distance,old_robot_location,0)
         dist = float(distance) + random.gauss(0.0, self.forward_noise)
         x = self.x + (cos(self.orientation) * dist)
@@ -410,11 +385,19 @@ def initialize():
 # --------
 N = 150 # number of particles
 T = 80  # number of iterations
+# Robot Parameters:
+ROBOT_X = 100.0
+ROBOT_Y = 220.0
+ROBOT_THETA = pi/2
 
 initialize_world()
 isEvaluated = 0
 print "Landmarks"
 print landmarks
+
+# ensure that sensors are ready
+enable_servo()
+enable_encoders()
 
 obstacle_bounds = []
 for landmark in landmarks[1:]:
@@ -438,7 +421,7 @@ for i in range(N):
 myrobot = robot()
 myrobot.isRobot = True
 # set robot location
-myrobot.set(100.0, 220.0, pi/2)
+myrobot.set(ROBOT_X, ROBOT_Y, ROBOT_THETA)
 myrobot.set_noise(NOISE_FWD, NOISE_ROT, NOISE_US)
 
 print 'Mean error at start', eval(myrobot, p)
