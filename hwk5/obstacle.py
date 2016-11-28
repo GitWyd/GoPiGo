@@ -45,4 +45,7 @@ class Point:
                 dist1 = (a.x-c.x)**2 + (a.y-c.y)**2
                 dist2 = (b.x-c.x)**2 + (b.y-c.y)**2
                 return dist1 > dist2
- 
+        def set_x(self, x):
+                self.x = x
+        def set_y(self, y):
+                self.y = y 
