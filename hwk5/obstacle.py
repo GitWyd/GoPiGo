@@ -26,10 +26,26 @@ class Obstacle:
                 for passnr in range(len(list)-1,0,-1):
                         for i in range(passnr):
                                 if list[i].is_left_CW(list[i+1]):
-                                        temp = list[i]
-                                        list[i] = list[i+1]
-                                        list[i+1] = temp
+                                        self._swap_elements(list, i, i+1)
+        # returns the list index of the point with the lowest y coordinate 
+        def _get_lowest_y_coordinate_idx(self):
+                lowest_y_idx = 1
+                for i in range(len(self.vertices)):
+                        if self.vertices[i]<self.vertices[lowest_y_idx]:
+                                lowest_y_idx=i
+                return lowest_y_idx
+        # swaps two elements in a list, and assumes 
+        def _swap_elements(self, list=None, i, j):
+                if not list:
+                        list = self.vertices
+                temp = list[i]
+                list[i] = list[j]
+                list[j] = temp
+                return list
+        # computes the convex hull
         def convex_hull(self):
+                n = len(self.vertices)
+
                 self.convex_hull = hull
 class Point:
         def __init__(self, x=None, y=None):
