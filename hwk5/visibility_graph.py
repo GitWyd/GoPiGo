@@ -52,9 +52,9 @@ class Line:
 
     def find_intersection(line1, line2):
         # Method to find intersection between two lines
-        line1 = (self.coord_one, self.coord_two)
-        xdiff = (line1[0][0] - line1[1][0], line2[0][0] - line2[1][0])
-        ydiff = (line1[0][1] - line1[1][1], line2[0][1] - line2[1][1])        
+        # line1 = (self.coord_one, self.coord_two)
+        xdiff = (line1[0].x - line1[1].x, line2[0].x - line2[1].x)
+        ydiff = (line1[0].y - line1[1].y, line2[0].y - line2[1].y)        
         div = det(xdiff, ydiff)
         if div == 0:
             print 'div 0'
