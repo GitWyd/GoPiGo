@@ -3,7 +3,7 @@
 # pmw2125, as4916
 ##
 
-
+from visibility_graph import Graph
 
 ROBOT_SIZE = 23
 obstacle_list = []
@@ -271,4 +271,5 @@ def grow_obstacles():
 if __name__ == '__main__':
     initialize_world()
     grow_obstacles()
-
+    g = Graph(obstacle_list, Point(robot.robot_x, robot.robot_y), Point(goal_x, goal_y))
+    g.make_edges()
