@@ -61,6 +61,8 @@ class Obstacle:
         def grow_obstacles(self):
                 global robot
                 robot.translate_to_origin()
+                robot.reflect_along_x()
+                robot.reflect_along_y()
                 self.hull_vertices.extend(self.vertices)
                 for vertex in self.vertices:
                         robot.translate_to_vertex(vertex)
@@ -90,6 +92,10 @@ class Obstacle:
                             stack.pop()
                 
                 self.hull_vertices = stack
+        def __eq__(self, other): 
+                return self.vertices == other.vertices
+        def __hash__(self):
+                return hash(id(self))
                 
 class Point:
         def __init__(self, x=None, y=None):
@@ -121,6 +127,10 @@ class Point:
 
         def __radd__(self, other):
                 return Point(self.x+other.x,self.y+other.y)
+        def __eq__(self, other): 
+                return self.x == other.x and self.y == self.y
+        def __hash__(self):
+                return hash(id(self))
 
         def set_x(self, x):
                 self.x = x
@@ -145,20 +155,22 @@ class Robot:
     def __init__(self, x, y):
         self.robot_x = x
         self.robot_y = y
-        self.reference_x = 0.0
-        self.reference_y = 0.0
+        # translate reference point
+        self.reference_x = x - 5.5
+        self.reference_y = y + 8
         self.length = 23
         self.width = 23
         self.theta = 90
+        # corner points of robot
         self.a = Point(self.reference_x, self.reference_y)
         self.b = Point(self.reference_x + ROBOT_SIZE, self.reference_y)
         self.c = Point(self.reference_x, self.reference_y - ROBOT_SIZE)
         self.d = Point(self.reference_x + ROBOT_SIZE, self.reference_y - ROBOT_SIZE)
-
+    # pick up robot and bring it to the origiin
     def translate_to_origin(self):
         origin_x = self.a.x
         origin_y = self.a.y
-
+        # set robot upper left corner to [0,0]
         self.a.set_x_y(self.a.x - origin_x, self.a.y - origin_y)  
         self.b.set_x_y(self.b.x - origin_x, self.b.y - origin_y)  
         self.c.set_x_y(self.c.x - origin_x, self.c.y - origin_y)  
@@ -198,15 +210,20 @@ def initialize_world():
     global start_y
     global obstacle_list
     global robot
+    
+    # initialize start position
     start_x = float(obstacles[0].split()[0])
     start_y = float(obstacles[0].split()[1])
+    # initialize robot at start position
     robot = Robot(start_x, start_y)
+    # initialize goal position
     goal_x = float(obstacles[1].split()[0])
     goal_y = float(obstacles[1].split()[1])
+    # world dimensions
     world_x = float(obstacles[2].split()[0])
     world_y = float(obstacles[2].split()[1])
     num_obstacles = int(obstacles[3].split()[0])
-    counter = 4
+    counter = 4 # index for list of points
     for i in range(0, num_obstacles, 1):
         num_vertices = int(obstacles[counter].split()[0])
         obstacle = Obstacle()
@@ -218,10 +235,9 @@ def initialize_world():
         obstacle_list.append(obstacle)
 
 def grow_obstacles():
-    counter = 1
     for obstacle in obstacle_list:
         obstacle.grow_obstacles()
-        print 'obstacle ' + str(counter)
+#        print 'obstacle ' + str(counter)
         obstacle.compute_convex_hull()
 
 if __name__ == '__main__':
