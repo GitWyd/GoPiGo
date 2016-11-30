@@ -2,6 +2,9 @@
 # Obstacle classa
 # pmw2125, as4916
 ##
+
+
+
 ROBOT_SIZE = 23
 obstacle_list = []
 world_x = 0.0
@@ -20,24 +23,27 @@ class Obstacle:
                                 self.vertices.append(Point(pt[0],pt[1]))
                 self.center = None
                 self.convex_hull = None
+
         def add_vertex(self, x, y):
                 pt = Point(x,y)
                 self.vertices.append(pt)
                 self.center = self._find_centroid()
+
         def _find_centroid(self):
                 tot_x = sum(pt.x for pt in self.vertices)
                 tot_y = sum(pt.y for pt in self.vertices)
                 n = len(self.vertices)
                 return Point(tot_x/n, tot_y/n)
 
-        def _order_vertices_CW(self):
+        def _order_vertices_CW(self, P0):
         # bubble sort algorithm ()
                 vertices_list = self.hull_vertices 
                 for passnr in range(len(vertices_list)-1,0,-1):
                         for i in range(passnr):
-                                if vertices_list[i].is_left_CW(vertices_list[i+1], self.center):
+                                if vertices_list[i].is_left_CW(vertices_list[i+1], P0):
                                         self._swap_elements(vertices_list, i, i+1)
-                                        
+                self.hull_vertices = vertices_list         
+
         # returns the list index of the point with the lowest y coordinate 
         def _get_lowest_y_coordinate(self):
                 lowest_y_idx = 0
@@ -45,8 +51,10 @@ class Obstacle:
                 for i in range(len(vertices_list)):
                         if vertices_list[i].y < vertices_list[lowest_y_idx].y:
                                 lowest_y_idx = i
+                        elif vertices_list[i].y == vertices_list[lowest_y_idx].y:
+                                if vertices_list[i].x > vertices_list[lowest_y_idx].x:
+                                        lowest_y_idx = i
                 coord = vertices_list[lowest_y_idx]
-                del vertices_list[lowest_y_idx]
                 self.hull_vertices = vertices_list
                 return coord 
 
@@ -65,35 +73,35 @@ class Obstacle:
                 robot.reflect_along_y()
                 self.hull_vertices.extend(self.vertices)
                 for vertex in self.vertices:
-                        robot.translate_to_vertex(vertex)
-                        self.hull_vertices.extend(robot.get_corners())
+                        hull_vertices = robot.translate_to_vertex(vertex)
+                        self.hull_vertices.extend(hull_vertices)
                 self.hull_vertices = list(set(self.hull_vertices))
 
         def compute_convex_hull(self):
-                N = len(self.hull_vertices)
-                print 'N = ' + str(N) 
-                print 'earlier vertices ' + str(self.hull_vertices)
                 P0 = self._get_lowest_y_coordinate()
-                print 'earlier vertices ' + str(self.hull_vertices)
-                Pn1 = self.hull_vertices[N - 2]
+                self._order_vertices_CW(P0)
+                N = len(self.hull_vertices)
+                Pn1 = self.hull_vertices[N - 1]
                 vertices_list = self.hull_vertices
                 stack = [Pn1, P0]
-                i = 0 
-                while i < N - 1 and len(stack) >= 2:
-                        top = stack.pop()
-                        second = stack.pop()
-                        stack.append(second)
-                        stack.append(top)
-                        print 'i = ' + str(i)    
-                        if vertices_list[i].is_left_CW(top, second):
+                i = 1 
+                while i < N:
+                        top = stack[len(stack) - 1]
+                        second = stack[len(stack) - 2]
+                        if vertices_list[i].is_strictly_left(top, second):
                             stack.append(vertices_list[i])
                             i+=1
                         else:
                             stack.pop()
                 
+                stack.pop()
+                print 'convex hull vertices'
                 self.hull_vertices = stack
+                print self.hull_vertices
+                
         def __eq__(self, other): 
                 return self.vertices == other.vertices
+
         def __hash__(self):
                 return hash(id(self))
                 
@@ -101,20 +109,22 @@ class Point:
         def __init__(self, x=None, y=None):
                 self.x = x
                 self.y = y
+        # returns True if a is strictly left of b
+        # returns false otherwise
+        def is_strictly_left(self, b, c):
+                a = self
+                det = (a.x-c.x) * (b.y-c.y) - (b.x-c.x) * (a.y-c.y)
+                return det<0
+                
         # returns true if a point A is left of point B
         # in Clockwise ordering around the center
         def is_left_CW(self, pt, center):
                 a = self
                 b = pt
                 c = center
-                if (a.x - c.x < 0 and b.x - c.x >= 0):
-                        return False
-                if (a.x - c.x >= 0 and b.x - c.x < 0):
-                        return True
-                if (a.x - c.x == 0 and b.x - c.x == 0):
-                        if (a.y - c.y >=0 or b.y - c.y >=0):
-                                return a.y > b.y
-                        return b.y > a.y
+                # if det=0, then points are on the same line
+                # if det>0, then a is right of b
+                # if det<0, then a is left of b
                 det = (a.x-c.x) * (b.y-c.y) - (b.x-c.x) * (a.y-c.y)
                 if det < 0:
                         return True
@@ -123,12 +133,18 @@ class Point:
                 # for points that lie on same line, tiebrake by choosing the one closer to the center
                 dist1 = (a.x-c.x)**2 + (a.y-c.y)**2
                 dist2 = (b.x-c.x)**2 + (b.y-c.y)**2
+#                if (a.x == b.x):
+#                   return dist1 > dist2
+#                elif (a.y == b.y):
+#                    return dist1 < dist2
                 return dist1 > dist2
 
         def __radd__(self, other):
                 return Point(self.x+other.x,self.y+other.y)
+
         def __eq__(self, other): 
                 return self.x == other.x and self.y == self.y
+
         def __hash__(self):
                 return hash(id(self))
 
@@ -150,6 +166,15 @@ class Point:
         def reflect_y(self):
             self.set_x(self.x * -1)
             return self
+        
+        def __eq__(self, other):
+            return self.__dict__ == other.__dict__
+
+        def __hash__(self):
+            return hash(self.x) ^ hash(self.y)
+
+        def __repr__(self):        
+            return '\n\t[x=%.6s y=%.6s]' % (str(self.x), str(self.y))
 
 class Robot:
     def __init__(self, x, y):
@@ -194,11 +219,12 @@ class Robot:
     def translate_to_vertex(self, vertex):
         vertex_x = vertex.x
         vertex_y = vertex.y
-        self.a.set_x_y(self.a.x + vertex_x, self.a.y + vertex_y)  
-        self.b.set_x_y(self.b.x + vertex_x, self.b.y + vertex_y)  
-        self.c.set_x_y(self.c.x + vertex_x, self.c.y + vertex_y)  
-        self.d.set_x_y(self.d.x + vertex_x, self.d.y + vertex_y)  
-        
+        a = Point(self.a.x + vertex_x, self.a.y + vertex_y)
+        b = Point(self.b.x + vertex_x, self.b.y + vertex_y)
+        c = Point(self.c.x + vertex_x, self.c.y + vertex_y)
+        d = Point(self.d.x + vertex_x, self.d.y + vertex_y)
+        return [a, b, c, d] 
+
 def initialize_world():
     global obstacles
     obstacles = [obstacle.rstrip('\n') for obstacle in open('obstacles.txt')]
@@ -235,10 +261,12 @@ def initialize_world():
         obstacle_list.append(obstacle)
 
 def grow_obstacles():
+    counter = 1
     for obstacle in obstacle_list:
+        print 'obstacle ' + str(counter)
         obstacle.grow_obstacles()
-#        print 'obstacle ' + str(counter)
         obstacle.compute_convex_hull()
+        counter += 1
 
 if __name__ == '__main__':
     initialize_world()
