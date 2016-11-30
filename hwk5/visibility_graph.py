@@ -1,5 +1,5 @@
 from Queue import *
-
+from collections import defaultdict
 class Graph:
     def __init__(self, obstacles, start, end):
         self.edges = defaultdict(list)
