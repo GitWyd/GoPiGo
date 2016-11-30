@@ -15,34 +15,34 @@ class Graph:
     # end_vertex to all obstacle hulls
     # each vertex of every obstacel hull to other vertices of other obstacle hulls
     def make_edges(self):
-    	polygons = []
-    	for obstacle in self.obstacles:
-    		polygon = Hull_Polygon()
-    		polygon.make_hull_polygon(obstacle.hull_vertices)
-    		polygons.append(polygon)
-		
-		for i in range(0,len(self.obstacles)):
-			for vertex in self.obstacles[i].hull_vertices:
-	    		if is_visible(self.start, vertex, polygons):
-	    			edges[start] = edges.get(start).append(Line(end,vertex))
-	    		if is_visible(self.end, vertex, polygons):
-	    			edges[end] = edges.get(end).append(Line(end,vertex))
+        polygons = []
+        for obstacle in self.obstacles:
+            polygon = Hull_Polygon()
+            polygon.make_hull_polygon(obstacle.hull_vertices)
+            polygons.append(polygon)
+        
+        for i in range(0,len(self.obstacles)):
+            for vertex in self.obstacles[i].hull_vertices:
+                if is_visible(self.start, vertex, polygons):
+                    edges[start] = edges.get(start).append(Line(end,vertex)) 
+                if is_visible(self.end, vertex, polygons):
+                    edges[end] = edges.get(end).append(Line(end,vertex))
 
-	    		obstacle_temp = self.obstacles[:i] + self.obstacles[i+1:]
-	    		for other_obstacle in obstacle_temp:
-	    			for other_vertex in other_obstacle:
-	    				if is_visible(vertex, other_vertex, polygons):
-	    					edges[vertex] = edges.get(vertex).append(Line(vertex, other_vertex))
+                obstacle_temp = self.obstacles[:i] + self.obstacles[i+1:]
+                for other_obstacle in obstacle_temp:
+                    for other_vertex in other_obstacle:
+                        if is_visible(vertex, other_vertex, polygons):
+                            edges[vertex] = edges.get(vertex).append(Line(vertex, other_vertex))
 
     # Check for point visibility
     def is_visible(self, start_vertex, end_vertex, hull_polygons):
-    	temp_line = Line(start_vertex, end_vertex)
-    	for polygon in hull_polygons:
-    		for edge in polygon:
-    			if find_intersection(temp_line, edge):
-    				return False
-    			else:
-    				return True
+        temp_line = Line(start_vertex, end_vertex)
+        for polygon in hull_polygons:
+            for edge in polygon:
+                if find_intersection(temp_line, edge):
+                    return False
+                else:
+                    return True
 
     def manhattan(coord1, coord2):
         return abs(coord1.x - coord2.x) + abs(coord1.y - coord2.y)
@@ -136,10 +136,10 @@ def det(a, b):
     
 
 class Hull_Polygon:
-	def __init__(self):
-		self.polygon = []
+    def __init__(self):
+        self.polygon = []
 
-	def make_hull_polygon(self,hull_vertices):
-		for i in range(0,len(hull_vertices) - 1):
-			self.polygon.append(Line(hull_vertices[i],hull_vertices[i+1]))
-		self.polygon.append(Line(hull_vertices[-1],hull_vertices[0]))
+    def make_hull_polygon(self,hull_vertices):
+        for i in range(0,len(hull_vertices) - 1):
+            self.polygon.append(Line(hull_vertices[i],hull_vertices[i+1]))
+        self.polygon.append(Line(hull_vertices[-1],hull_vertices[0]))
