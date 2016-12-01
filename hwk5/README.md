@@ -54,6 +54,7 @@ The program works as under -
 4) Once the final path is traversed on the display console, just click it to continue to run the actual odometry on the robot. Clicking on the turtle display console exits the screen and allows us to resume the program.
 
 5) The odometry is achieved as thus-
+
 	a. We pass the result of the Dijkstra shortest path to follow_path.py as a set of points on the graph to traverse in the real world system with the robot location ie start point and the robot facing straight ahead
 
 	b. The program then creates a line from the start to the first point on the path and keeps iteratively doing it for each consecutive point from the last point travelled to.
