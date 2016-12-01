@@ -17,7 +17,7 @@ def turn_to_target():
 	global loc_target
 	global loc_robot
 	tgt_x, tgt_y = (loc_target.x, loc_target.y)
-	src_x, src_y = (loc_robot[0], loc_robot[1])
+	src_x, src_y = (loc_robot.x, loc_robot.y)
 	theta =  math.degrees(math.atan((tgt_Y - src_y)/(tgt_x - src_x)))
 	orientation = np.rad2deg(orient_robot)
 	if theta > orientation:
@@ -52,8 +52,8 @@ def move_fotward(dist):
     enc_tgt(1,1,pulse)
     fwd()
     time.sleep(0.5*pulse)
-    x = loc_robot + dist*cos(np.deg2rad(orientation))
-    y = loc_robot + dist*sin(np.deg2rad(orientation))
+    x = loc_robot.x + dist*cos(np.deg2rad(orientation))
+    y = loc_robot.x + dist*sin(np.deg2rad(orientation))
     loc_robot = Point(x,y)
 def cm2pulse(distance):
     distToWheelRatio = float(distance / WHEEL_CIRCUMFERENCE)
@@ -67,7 +67,7 @@ def rotate_left(theta):
     if not pulse:
 		return
     # update robot location
-    global loc_robot
+    global orient_robot
     orient_robot += theta 
     enc_tgt(1,1, pulse)
     left_rot()
@@ -80,7 +80,7 @@ def rotate_right(theta):
     if not pulse:
 		return
     # update robot location
-    global loc_robot
+    global orient_robot
     orient_robot -= theta 
     enc_tgt(1,1, pulse)
     left_rot()
