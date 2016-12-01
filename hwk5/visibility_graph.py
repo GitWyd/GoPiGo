@@ -1,5 +1,7 @@
 from Queue import *
 from collections import defaultdict
+from draw_world import *
+from turtle import *
 
 class Hull_Polygon:
     def __init__(self):
@@ -18,7 +20,7 @@ class Hull_Polygon:
         return str(parts)
 
 class Graph:
-    def __init__(self, obstacles, start, end):
+    def __init__(self, obstacles, start, end, robot):
         self.edges = defaultdict(list)
         self.obstacles = obstacles
         self.start = start
@@ -61,6 +63,10 @@ class Graph:
                                 self.edges.get(vertex).append(Line(vertex, other_vertex))
                             else:
                                 self.edges[vertex] = [Line(vertex, other_vertex)]
+        maze = Maze(240, 420, self.obstacles)
+        maze.draw()
+        maze.show_robot()
+        exitonclick()
 
     # Check for point visibility
     def is_visible(self, start_vertex, end_vertex, hull_polygons):

@@ -3,7 +3,7 @@
 # pmw2125, as4916
 ##
 
-from visibility_graph import Graph
+from visibility_graph import *
 
 ROBOT_SIZE = 23
 obstacle_list = []
