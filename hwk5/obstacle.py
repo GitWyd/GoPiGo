@@ -180,16 +180,17 @@ class Robot:
         self.robot_x = x
         self.robot_y = y
         # translate reference point
-        self.reference_x = x - 5.5
-        self.reference_y = y + 8
+        # 
+        self.reference_x = x 
+        self.reference_y = y
         self.length = 23
         self.width = 23
         self.theta = 90
         # corner points of robot
-        self.a = Point(self.reference_x, self.reference_y)
-        self.b = Point(self.reference_x + ROBOT_SIZE, self.reference_y)
-        self.c = Point(self.reference_x, self.reference_y - ROBOT_SIZE)
-        self.d = Point(self.reference_x + ROBOT_SIZE, self.reference_y - ROBOT_SIZE)
+        self.a = Point(self.reference_x - 12, self.reference_y + 12)
+        self.b = Point(self.reference_x + 12, self.reference_y + 12)
+        self.c = Point(self.reference_x - 12 , self.reference_y - 12)
+        self.d = Point(self.reference_x + 12, self.reference_y - 12)
     # pick up robot and bring it to the origiin
     def translate_to_origin(self):
         origin_x = self.a.x
@@ -262,6 +263,8 @@ def initialize_world():
 def grow_obstacles():
     counter = 1
     robot.translate_to_origin()
+    print 'robot origin'
+    print str(robot.get_corners())
     robot.reflect_along_x()
     robot.reflect_along_y()
     for obstacle in obstacle_list:
@@ -273,9 +276,6 @@ def grow_obstacles():
 if __name__ == '__main__':
     initialize_world()
     grow_obstacles()
-    g = Graph(obstacle_list, Point(robot.robot_x, robot.robot_y), Point(goal_x, goal_y))
+    g = Graph(obstacle_list, Point(robot.robot_x, robot.robot_y), Point(goal_x, goal_y), robot)
     g.make_edges()
 
-    print "Graph "
-    for key,value in g.edges.iteritems():
-        print '['+ str(key) + ',' + str(value) + ']'

@@ -31,8 +31,6 @@ class Maze(object):
         # Use this to draw things on the screen
         turtle.pendown()
         turtle.begin_fill()
-        print "Points"
-        print points
         for points in points:
             dx, dy = points
             turtle.goto(offsetx + scale * dx, offsety + scale * dy)

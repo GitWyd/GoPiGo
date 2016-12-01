@@ -1,7 +1,9 @@
-from Queue import *
+import Queue
 from collections import defaultdict
 from draw_world import *
 from turtle import *
+import sys
+import time
 
 class Hull_Polygon:
     def __init__(self):
@@ -25,6 +27,7 @@ class Graph:
         self.obstacles = obstacles
         self.start = start
         self.end = end
+        self.robot = robot
 
     def neighbors(self, id):
         return self.edges[id]
@@ -44,31 +47,62 @@ class Graph:
             for vertex in self.obstacles[i].hull_vertices:
                 if self.is_visible(self.start, vertex, polygons):
                     if self.edges.get(self.start):
-                        self.edges.get(self.start).append(Line(self.start,vertex)) 
+                        self.edges.get(self.start).append(vertex) 
                     else:
-                        self.edges[self.start] = [Line(self.start,vertex)]
-                if self.is_visible(self.end, vertex, polygons):
-                    if self.edges.get(self.end):
-                        print "Edges"
-                        print self.edges.get(self.end)
-                        print type(self.edges.get(self.end))
-                        self.edges.get(self.end).append(Line(self.end,vertex))
+                        self.edges[self.start] = [vertex]
+                if self.is_visible(vertex, self.end, polygons):
+                    if self.edges.get(vertex):
+                        self.edges.get(vertex).append(self.end)
                     else:
-                        self.edges[self.end] = [Line(self.end,vertex)]
+                        self.edges[vertex] = [self.end]
                 obstacle_temp = self.obstacles[:i] + self.obstacles[i+1:]
                 for other_obstacle in obstacle_temp:
                     for other_vertex in other_obstacle.hull_vertices:
                         if self.is_visible(vertex, other_vertex, polygons):
                             if self.edges.get(vertex):
-                                self.edges.get(vertex).append(Line(vertex, other_vertex))
+                                self.edges.get(vertex).append(other_vertex)
                             else:
-                                self.edges[vertex] = [Line(vertex, other_vertex)]
+                                self.edges[vertex] = [other_vertex]
+
+            hull_vertices_temp = self.obstacles[i].hull_vertices
+            for i in range(0,len(hull_vertices_temp) - 1):
+                if self.edges.get(hull_vertices_temp[i]):
+                    self.edges.get(hull_vertices_temp[i]).append(hull_vertices_temp[i+1])
+                else:
+                    self.edges[hull_vertices_temp[i]] = [hull_vertices_temp[i+1]]
+                if self.edges.get(hull_vertices_temp[i+1]):
+                    self.edges.get(hull_vertices_temp[i+1]).append(hull_vertices_temp[i])
+                else:
+                    self.edges[hull_vertices_temp[i+1]] = [hull_vertices_temp[i]]
+            self.edges[hull_vertices_temp[0]] = [hull_vertices_temp[-1]]
+
         maze = Maze(240, 420, self.obstacles)
         maze.draw()
-        maze.show_robot()
+        maze.show_robot(self.robot)
+        time.sleep(0.5)
+        for key, value in self.edges.iteritems():
+            if value:
+                maze.drawLines(key, value)
+                time.sleep(0.5)
+
+        for key,value in self.edges.iteritems():
+            print str(key)+':\n'+str(value)
+        result, cost_so_far = self.dijkstra_search()
+        print "Result path and cost"
+        print result
+        print cost_so_far
+        for key, value in self.edges.iteritems():
+            if value:
+                maze.drawLines(key, value, "white")
+        maze.draw()
+        maze.show_robot(self.robot)
+        self.robot.robot_x = self.end.x
+        self.robot.robot_y = self.end.y
+        maze.drawResult(result[0], result, "green")
+        maze.show_robot(self.robot)
         exitonclick()
 
-    # Check for point visibility
+    # Check for point visibilitys
     def is_visible(self, start_vertex, end_vertex, hull_polygons):
         temp_line_one = Line(start_vertex, end_vertex)
         temp_line_two = Line(end_vertex, start_vertex)
@@ -86,59 +120,89 @@ class Graph:
         
         return True
 
-    def manhattan(coord1, coord2):
+    def manhattan(self, coord1, coord2):
         return abs(coord1.x - coord2.x) + abs(coord1.y - coord2.y)
 
-    def l2(coord1, coord2):
+    def l2(self, coord1, coord2):
         return sqrt( (coord1.x - coord2.x) ** 2 + (coord1.y - coord2.y) ** 2 )
 
-    def dijkstra_search(graph, start, goal):
-        frontier = PriorityQueue()
-        frontier.put(start, 0)
-        came_from = {}
-        cost_so_far = {}
-        came_from[start] = None
-        cost_so_far[start] = 0
-        
-        while not frontier.empty():
-            current = frontier.get()
-            
-            if current == goal:
-                break
-            
-            for next in graph.neighbors(current):
-                new_cost = cost_so_far[current] + graph.l2(current, next)
-                if next not in cost_so_far or new_cost < cost_so_far[next]:
-                    cost_so_far[next] = new_cost
-                    priority = new_cost
-                    frontier.put(next, priority)
-                    came_from[next] = current
-        
-        return came_from, cost_so_far
-
-    def a_star_search(graph, start, goal):
+    def dijkstra_search(self):
+        closed_set = set()
         frontier = Queue.PriorityQueue()
-        frontier.put(start, 0)
+        frontier.put((self.l2(self.start,self.end),self.start))
         came_from = {}
         cost_so_far = {}
-        came_from[start] = None
-        cost_so_far[start] = 0
+        for obstacle in self.obstacles:
+            for vertex in obstacle.hull_vertices:
+                cost_so_far[vertex] = sys.maxsize
+        cost_so_far[self.end] = sys.maxsize
+        cost_so_far[self.start] = 0
         
         while not frontier.empty():
-            current = frontier.get()
+            min_f, current = frontier.get()
             
-            if current == goal:
-                break
-            
-            for next in graph.neighbors(current):
-                new_cost = cost_so_far[current] + graph.l2(current, next)
-                if next not in cost_so_far or new_cost < cost_so_far[next]:
-                    cost_so_far[next] = new_cost
-                    priority = new_cost + l2(goal, next)
-                    frontier.put(next, priority)
-                    came_from[next] = current
+            if current == self.end:
+                return (self.reconstructed_path(came_from, current), cost_so_far[current])
+
+            if current in closed_set:
+                continue
+            closed_set.add(current)
+
+            for next in self.neighbors(current):
+                if next not in closed_set:
+
+                    new_cost = cost_so_far[current] + self.l2(current, next)
+
+                    if new_cost < cost_so_far[next]:
+                        cost_so_far[next] = new_cost
+                        priority = new_cost
+                        frontier.put((priority, next))
+                        came_from[next] = current
         
-        return came_from, cost_so_far
+        # return came_from, cost_so_far
+
+    def reconstructed_path(self,came_from, current):
+        path = [current]
+        while current in came_from:
+            current = came_from[current]
+            path.append(current)
+        return [p for p in reversed(path)]  
+
+    def a_star_search(self):
+        closed_set = set()
+        frontier = Queue.PriorityQueue()
+        frontier.put((self.l2(self.start,self.end),self.start))
+        came_from = {}
+        cost_so_far = {}
+        for obstacle in self.obstacles:
+            for vertex in obstacle.hull_vertices:
+                cost_so_far[vertex] = sys.maxsize
+        cost_so_far[self.end] = sys.maxsize
+        cost_so_far[self.start] = 0
+        
+        while not frontier.empty():
+            min_f, current = frontier.get()
+            
+            if current == self.end:
+                return (self.reconstructed_path(came_from, current), cost_so_far[current])
+
+            if current in closed_set:
+                continue
+            closed_set.add(current)
+            print "Current"
+            print current
+            print "Neighbours"
+            print self.neighbors(current)
+            for next in self.neighbors(current):
+                if next not in closed_set:
+
+                    new_cost = cost_so_far[current] + self.l2(current, next)
+
+                    if new_cost < cost_so_far[next]:
+                        cost_so_far[next] = new_cost
+                        priority = new_cost + self.l2(self.end, next)
+                        frontier.put((priority, next))
+                        came_from[next] = current
 
 class Line:
     def __init__(self, point_one, point_two):

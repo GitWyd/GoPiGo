@@ -4,12 +4,14 @@ import random
 from turtle import *
 import numpy as np
 from obstacle import Point
+import time
 
-OBSTACLE_LINE_COLOR = "red"
-OBSTACLE_FILL_COLOR = "red"
+OBSTACLE_LINE_COLOR = "blue"
+OBSTACLE_FILL_COLOR = "white"
+HULL_LINE_COLOR = "black"
 ORIGIN = Point(0,0)
 scale=3
-offsetx= -scale/2*100
+offset= -scale/2*100
 offsety= -scale/2*100
 
 class Maze(object):
@@ -21,27 +23,64 @@ class Maze(object):
 
         self.boundaries = [self.origin,Point(self.world_x,0),Point(self.world_x, self.world_y),Point(0, self.world_y)]
 
+    def drawLines(self, start, points, lineColour="blue"):
+        turtle.shape('classic')
+        turtle.penup()
+        turtle.pencolor(lineColour)
+
+        x = start.x
+        y = start.y
+        turtle.goto(offset + x, offset + y)
+
+        # Use this to draw things on the screen
+        turtle.pendown()
+        for point in points:
+            dx = point.x
+            dy = point.y
+            turtle.goto(offset + dx,  offset + dy)
+            turtle.goto(offset + x, offset + y)
+               # Set this back when drawing done
+        turtle.penup()
+        turtle.update()      # connect them to start to form a closed shape
+    
+    def drawResult(self, start, points, lineColour="green"):
+        turtle.penup()
+        turtle.pencolor(lineColour)
+        
+        x = start.x
+        y = start.y
+        turtle.goto(offset + 0, offset + 0)
+        turtle.goto(offset + x, offset + y)
+
+        # Use this to draw things on the screen
+        turtle.pendown()
+        for point in points:
+            dx = point.x
+            dy = point.y
+            turtle.goto(offset + dx,  offset + dy)
+            time.sleep(1)
+            turtle.update()
+               # Set this back when drawing done
+        turtle.penup()
+        turtle.update() # connect them to start to form a closed shape
+        
+
     def drawShapes(self, start, points, lineColour="blue", fillColour="white"):
         turtle.penup()
         turtle.pencolor(lineColour)
         turtle.fillcolor(fillColour)
-        print start
         x = start.x
         y = start.y
-        turtle.goto(x, y)
+        turtle.goto(offset + x, offset + y)
 
         # Use this to draw things on the screen
         turtle.pendown()
         turtle.begin_fill()
-        print "Points"
-        print points
         for point in points:
             dx = point.x
             dy = point.y
-            turtle.goto( dx,  dy)
-            print "Point gone to"
-            print turtle.position()
-        turtle.goto( x,  y)  # connect them to start to form a closed shape
+            turtle.goto(offset + dx,  offset + dy)
+        turtle.goto(offset + x, offset + y)  # connect them to start to form a closed shape
         
         # Set this back when drawing done
         turtle.penup()
@@ -49,21 +88,23 @@ class Maze(object):
         turtle.update()
 
     def draw(self):
-    	turtle.tracer(50000, delay=0) 
+        turtle.tracer(50000, delay=0) 
         turtle.register_shape("dot", ((-1,-1), (-1,1), (1,1), (1,-1)))
         turtle.register_shape("particle", ((-3, -2), (0, 3), (3, -2), (0, 0)))
         turtle.speed(0)
         
+        turtle.register_shape("robot.gif")
         self.drawShapes(self.origin, self.boundaries)
         for obstacle in self.obstacles:
-            self.drawShapes(obstacle.hull_vertices[0], obstacle.hull_vertices, OBSTACLE_LINE_COLOR, OBSTACLE_FILL_COLOR)
+            self.drawShapes(obstacle.hull_vertices[0], obstacle.hull_vertices, HULL_LINE_COLOR, OBSTACLE_FILL_COLOR)
+        for obstacle in self.obstacles:
+            self.drawShapes(obstacle.vertices[0], obstacle.vertices, OBSTACLE_LINE_COLOR, OBSTACLE_FILL_COLOR)
         turtle.home()
         turtle.update()
 
     def show_robot(self, robot):
-        turtle.color("green")
-        turtle.shape('turtle')
-        turtle.setposition( robot.x,  robot.y)
-        turtle.setheading(np.rad2deg(robot.orientation))
+        turtle.shape('robot.gif')
+        turtle.setposition( offset + robot.robot_x, offset + robot.robot_y)
+        turtle.setheading(90)
         turtle.stamp()
         turtle.update()
