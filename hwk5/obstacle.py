@@ -4,6 +4,7 @@
 ##
 
 from visibility_graph import *
+import math
 
 ROBOT_SIZE = 23
 obstacle_list = []
@@ -165,7 +166,8 @@ class Point:
         def reflect_y(self):
             self.set_x(self.x * -1)
             return self
-        
+        def dist_to(self,other):
+            return sqrt((self.x-other.x)**2+(self.y-other.y)**2)
         def __eq__(self, other):
             return self.__dict__ == other.__dict__
 
