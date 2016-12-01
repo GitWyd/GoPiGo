@@ -93,6 +93,8 @@ def follow_path(path, robot_location, robot_orientation):
     orient_robot = robot_orientation
 
     for pt in path:
+                print("Next Point to go to: " pt)
 		loc_target = pt
 		turn_to_target()
 		go_to_target()
+                print('robot location: ' + str(loc_robot) + '\t orientation: ' + str(orient_robot))
