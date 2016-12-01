@@ -280,4 +280,4 @@ if __name__ == '__main__':
     grow_obstacles()
     g = Graph(obstacle_list, Point(robot.robot_x, robot.robot_y), Point(goal_x, goal_y), robot)
     g.make_edges()
-
+ 
