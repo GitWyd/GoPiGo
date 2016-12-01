@@ -6,6 +6,7 @@ This is a Lab 5 submission for Group 20
 Team Members: Anshuman Singh(as4916), Philippe Martin Wyder(pmw2125), Varun Jagdish Shetty(vs2567)
 
 The following submission is made up of the following files:
+
 1. obstacle.py - Contains code for reflection algorithm and accessory functions
 
 2. visibility_graph.py - Contains code for creating visibility graph, dijkstra and a_star_search algorithms
@@ -39,6 +40,7 @@ The program works as under -
 	d. Cost of taking the chortest path in terms of distance
 
 3) While running this, we can see the same being generated on the turtle display console where the following are displayed
+
 	a. start and end points
 
 	b. The expanded polygons based on reflection
@@ -59,7 +61,7 @@ The program works as under -
 	c. We calculate the l2 distance between the 2 points to traverse and break it down into steps to take for the robot and make it move in the steps till either the number of steps have been taken or we see an obstacle on the path based on the readings from the servo. We also calculate the slope of the line and rotate the robot to make the rotation before following the path
 
 	d. Once a point is reached, we do (c) again for the next set of points and repeat till end point has been reached
-	
+
 	e. Odometry is an issue and our trim tests have taken care of most issues. We also have a velcro band attached to the wheel of the robot for better traction
 
 6) We also have the code for identifying the orange cone which once the robot reaches the end point looks around for the orange and tries to match the hue color for it. Once it locates it, it will keep moving forward till the servo readings tell it to stop.
