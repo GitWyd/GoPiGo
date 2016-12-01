@@ -92,8 +92,10 @@ if __name__ == "__main__":
     for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=True):
         # grab the raw NumPy array representing the image, then initialize the timestamp
         image = frame.array
+        print image
         for pixel in image:
-            color = np.uint8([[pixel]])
+            print pixel
+            color = np.uint8([[pixel[y][x]]])
             hsv_color = bgr_to_hsv(color)
             print "HSV for each pixel"
 
