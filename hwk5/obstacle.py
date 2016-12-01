@@ -115,7 +115,9 @@ class Point:
                 a = self
                 det = (a.x-c.x) * (b.y-c.y) - (b.x-c.x) * (a.y-c.y)
                 return det<0
-                
+        def ccw(self,b,c):
+            a = self
+            return (c.y-a.y)*(b.x-a.x) > (b.y-a.y) * (c.x-a.x)        
         # returns true if a point A is left of point B
         # in Clockwise ordering around the center
         def is_left_CW(self, pt, center):
@@ -273,3 +275,7 @@ if __name__ == '__main__':
     grow_obstacles()
     g = Graph(obstacle_list, Point(robot.robot_x, robot.robot_y), Point(goal_x, goal_y))
     g.make_edges()
+
+    print "Graph "
+    for key,value in g.edges.iteritems():
+        print '['+ str(key) + ',' + str(value) + ']'
