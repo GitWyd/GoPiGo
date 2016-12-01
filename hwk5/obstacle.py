@@ -281,5 +281,5 @@ if __name__ == '__main__':
     grow_obstacles()
     g = Graph(obstacle_list, Point(robot.robot_x, robot.robot_y), Point(goal_x, goal_y), robot)
     g.make_edges()
-    follow_obstacle(g.path, Point(robot.robot_x, robot.robot_y), ROBOT_START_ORIENTATION)
+    #follow_obstacle(g.path, Point(robot.robot_x, robot.robot_y), ROBOT_START_ORIENTATION)
 

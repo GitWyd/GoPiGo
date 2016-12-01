@@ -46,7 +46,7 @@ class Maze(object):
     def drawResult(self, start, points, lineColour="green"):
         turtle.penup()
         turtle.pencolor(lineColour)
-        
+
         x = start.x
         y = start.y
         turtle.goto(offset + 0, offset + 0)
@@ -103,8 +103,19 @@ class Maze(object):
         turtle.update()
 
     def show_robot(self, robot):
+        turtle.clearstamps()
         turtle.shape('robot.gif')
         turtle.setposition( offset + robot.robot_x, offset + robot.robot_y)
         turtle.setheading(90)
+        turtle.stamp()
+        turtle.update()
+
+    def drawPoints(self, start, end):
+        turtle.shape('triangle')
+        turtle.setposition( offset + start.x, offset + start.y)
+        turtle.setheading(90)
+        turtle.stamp()
+        turtle.setposition( offset + end.x, offset + end.y)
+        turtle.setheading(-90)
         turtle.stamp()
         turtle.update()

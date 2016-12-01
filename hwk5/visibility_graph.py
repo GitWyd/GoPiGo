@@ -77,6 +77,7 @@ class Graph:
             self.edges[hull_vertices_temp[0]] = [hull_vertices_temp[-1]]
 
         maze = Maze(240, 420, self.obstacles)
+        maze.drawPoints(self.start, self.end)
         maze.draw()
         maze.show_robot(self.robot)
         time.sleep(0.5)
@@ -120,9 +121,11 @@ class Graph:
                         return False
         
         return True
+    def chebyshev(self, coord1, coord2):
+        return abs(coord1.x - coord2.x) + abs(coord1.y - coord2.y)
 
     def manhattan(self, coord1, coord2):
-        return abs(coord1.x - coord2.x) + abs(coord1.y - coord2.y)
+        return max(abs(coord1.x - coord2.x),abs(coord1.y - coord2.y))
 
     def l2(self, coord1, coord2):
         return sqrt( (coord1.x - coord2.x) ** 2 + (coord1.y - coord2.y) ** 2 )
@@ -190,18 +193,14 @@ class Graph:
             if current in closed_set:
                 continue
             closed_set.add(current)
-            print "Current"
-            print current
-            print "Neighbours"
-            print self.neighbors(current)
             for next in self.neighbors(current):
                 if next not in closed_set:
 
-                    new_cost = cost_so_far[current] + self.l2(current, next)
+                    new_cost = cost_so_far[current] + self.manhattan(current, next)
 
                     if new_cost < cost_so_far[next]:
                         cost_so_far[next] = new_cost
-                        priority = new_cost + self.l2(self.end, next)
+                        priority = new_cost + self.manhattan(self.end, next)
                         frontier.put((priority, next))
                         came_from[next] = current
 
