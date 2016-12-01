@@ -1,5 +1,22 @@
 from Queue import *
 from collections import defaultdict
+
+class Hull_Polygon:
+    def __init__(self):
+        self.polygon = []
+
+    def make_hull_polygon(self, hull_vertices):
+        
+        for i in range(0,len(hull_vertices) - 1):
+            self.polygon.append(Line(hull_vertices[i],hull_vertices[i+1]))
+        self.polygon.append(Line(hull_vertices[-1],hull_vertices[0]))
+
+    def __repr__(self):  
+        parts = []     
+        for line in self.polygon:
+            parts.append(line)
+        return str(parts)
+
 class Graph:
     def __init__(self, obstacles, start, end):
         self.edges = defaultdict(list)
@@ -20,29 +37,48 @@ class Graph:
             polygon = Hull_Polygon()
             polygon.make_hull_polygon(obstacle.hull_vertices)
             polygons.append(polygon)
-        
+
         for i in range(0,len(self.obstacles)):
             for vertex in self.obstacles[i].hull_vertices:
-                if is_visible(self.start, vertex, polygons):
-                    edges[start] = edges.get(start).append(Line(end,vertex)) 
-                if is_visible(self.end, vertex, polygons):
-                    edges[end] = edges.get(end).append(Line(end,vertex))
-
+                if self.is_visible(self.start, vertex, polygons):
+                    if self.edges.get(self.start):
+                        self.edges.get(self.start).append(Line(self.start,vertex)) 
+                    else:
+                        self.edges[self.start] = [Line(self.start,vertex)]
+                if self.is_visible(self.end, vertex, polygons):
+                    if self.edges.get(self.end):
+                        print "Edges"
+                        print self.edges.get(self.end)
+                        print type(self.edges.get(self.end))
+                        self.edges.get(self.end).append(Line(self.end,vertex))
+                    else:
+                        self.edges[self.end] = [Line(self.end,vertex)]
                 obstacle_temp = self.obstacles[:i] + self.obstacles[i+1:]
                 for other_obstacle in obstacle_temp:
-                    for other_vertex in other_obstacle:
-                        if is_visible(vertex, other_vertex, polygons):
-                            edges[vertex] = edges.get(vertex).append(Line(vertex, other_vertex))
+                    for other_vertex in other_obstacle.hull_vertices:
+                        if self.is_visible(vertex, other_vertex, polygons):
+                            if self.edges.get(vertex):
+                                self.edges.get(vertex).append(Line(vertex, other_vertex))
+                            else:
+                                self.edges[vertex] = [Line(vertex, other_vertex)]
 
     # Check for point visibility
     def is_visible(self, start_vertex, end_vertex, hull_polygons):
-        temp_line = Line(start_vertex, end_vertex)
-        for polygon in hull_polygons:
-            for edge in polygon:
-                if find_intersection(temp_line, edge):
-                    return False
-                else:
-                    return True
+        temp_line_one = Line(start_vertex, end_vertex)
+        temp_line_two = Line(end_vertex, start_vertex)
+
+        for p in hull_polygons:
+            if temp_line_one in p.polygon or temp_line_two in p.polygon:
+                continue
+            else:
+                for edge in p.polygon:
+                    if (temp_line_one.coord_two == edge.coord_one or \
+                        temp_line_one.coord_two == edge.coord_two):
+                        continue
+                    if temp_line_one.find_intersection(edge):
+                        return False
+        
+        return True
 
     def manhattan(coord1, coord2):
         return abs(coord1.x - coord2.x) + abs(coord1.y - coord2.y)
@@ -107,39 +143,25 @@ class Line:
 
     # need to change this for bounding intersections to points inside each edge
 
-    def find_intersection(line1, line2):
-        # Method to find intersection between two lines
-        # line1 = (self.coord_one, self.coord_two)
-        xdiff = (line1[0].x - line1[1].x, line2[0].x - line2[1].x)
-        ydiff = (line1[0].y - line1[1].y, line2[0].y - line2[1].y)        
-        div = det(xdiff, ydiff)
-        if div == 0:
-            print 'div 0'
-            return None
+    def find_intersection(self, line2):
 
-        d = (det(*line1), det(*line2))
-        x = det(d, xdiff) / div
-        y = det(d, ydiff) / div
+        return self.coord_one.ccw(line2.coord_one,line2.coord_two)!=self.coord_two.ccw(line2.coord_one, line2.coord_two) \
+               and self.coord_one.ccw(self.coord_two,line2.coord_one)!=self.coord_one.ccw(self.coord_two, line2.coord_two)
 
-        # Checking if the intersection point is within the range. line2 is the line made by the robot sensor. 
-        if (((x > line1[0][0] and x < line1[1][0]) or (x < line1[0][0] and x > line1[1][0])) \
-            and ((y > line1[0][1] and y < line1[1][1]) or (y < line1[0][1] and y > line1[1][1]))):
-            return True
-        else:
-            return False
-    
+    def __eq__(self, other):
+        return self.__dict__ == other.__dict__
+
+    def __hash__(self):
+        return hash(self.coord_one) ^ hash(self.coord_two)
+
     def get_line(self):
         return (self.coord_one, self.coord_two)
+
+    def __repr__(self):        
+        return '[Coord_one=%s \n\t Coord_two=%s]\n' % (str(self.coord_one), str(self.coord_two))
     
 def det(a, b):
     return a[0] * b[1] - a[1] * b[0]
     
 
-class Hull_Polygon:
-    def __init__(self):
-        self.polygon = []
 
-    def make_hull_polygon(self,hull_vertices):
-        for i in range(0,len(hull_vertices) - 1):
-            self.polygon.append(Line(hull_vertices[i],hull_vertices[i+1]))
-        self.polygon.append(Line(hull_vertices[-1],hull_vertices[0]))
