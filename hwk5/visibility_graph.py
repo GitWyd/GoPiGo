@@ -81,6 +81,7 @@ class Graph:
         maze.drawPoints(self.start, self.end)
         maze.show_robot(self.robot)
         time.sleep(0.5)
+        print "The Graph created"
         for key, value in self.edges.iteritems():
             if value:
                 maze.drawLines(key, value)

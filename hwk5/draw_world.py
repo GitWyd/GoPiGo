@@ -68,14 +68,13 @@ class Maze(object):
     def drawShapes(self, start, points, lineColour="blue", fillColour="white"):
         turtle.penup()
         turtle.pencolor(lineColour)
-        turtle.fillcolor(fillColour)
+        
         x = start.x
         y = start.y
         turtle.goto(offset + x, offset + y)
 
         # Use this to draw things on the screen
         turtle.pendown()
-        turtle.begin_fill()
         for point in points:
             dx = point.x
             dy = point.y
@@ -84,7 +83,6 @@ class Maze(object):
         
         # Set this back when drawing done
         turtle.penup()
-        turtle.end_fill()
         turtle.update()
 
     def draw(self):
@@ -96,11 +94,14 @@ class Maze(object):
         turtle.register_shape("robot.gif")
         self.drawShapes(self.origin, self.boundaries)
         
-        for obstacle in self.obstacles:
-            self.drawShapes(obstacle.hull_vertices[0], obstacle.hull_vertices, HULL_LINE_COLOR, OBSTACLE_FILL_COLOR)
-        time.sleep(2)
+
+        
         for obstacle in self.obstacles:
             self.drawShapes(obstacle.vertices[0], obstacle.vertices, OBSTACLE_LINE_COLOR, OBSTACLE_FILL_COLOR)
+            time.sleep(0.5)
+        for obstacle in self.obstacles:
+            self.drawShapes(obstacle.hull_vertices[0], obstacle.hull_vertices, HULL_LINE_COLOR, OBSTACLE_FILL_COLOR)
+            time.sleep(0.5)            
 
         turtle.home()
         turtle.update()
