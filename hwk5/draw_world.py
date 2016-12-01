@@ -58,7 +58,7 @@ class Maze(object):
             dx = point.x
             dy = point.y
             turtle.goto(offset + dx,  offset + dy)
-            time.sleep(1)
+            time.sleep(0.5)
             turtle.update()
                # Set this back when drawing done
         turtle.penup()
@@ -95,15 +95,17 @@ class Maze(object):
         
         turtle.register_shape("robot.gif")
         self.drawShapes(self.origin, self.boundaries)
+        
         for obstacle in self.obstacles:
             self.drawShapes(obstacle.hull_vertices[0], obstacle.hull_vertices, HULL_LINE_COLOR, OBSTACLE_FILL_COLOR)
+        time.sleep(2)
         for obstacle in self.obstacles:
             self.drawShapes(obstacle.vertices[0], obstacle.vertices, OBSTACLE_LINE_COLOR, OBSTACLE_FILL_COLOR)
+
         turtle.home()
         turtle.update()
 
     def show_robot(self, robot):
-        turtle.clearstamps()
         turtle.shape('robot.gif')
         turtle.setposition( offset + robot.robot_x, offset + robot.robot_y)
         turtle.setheading(90)
@@ -119,3 +121,4 @@ class Maze(object):
         turtle.setheading(-90)
         turtle.stamp()
         turtle.update()
+        time.sleep(2)

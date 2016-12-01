@@ -77,22 +77,25 @@ class Graph:
             self.edges[hull_vertices_temp[0]] = [hull_vertices_temp[-1]]
 
         maze = Maze(240, 420, self.obstacles)
-        maze.drawPoints(self.start, self.end)
         maze.draw()
+        maze.drawPoints(self.start, self.end)
         maze.show_robot(self.robot)
         time.sleep(0.5)
         for key, value in self.edges.iteritems():
             if value:
                 maze.drawLines(key, value)
-                time.sleep(0.5)
+                time.sleep(1)
 
         for key,value in self.edges.iteritems():
             print str(key)+':\n'+str(value)
         result, cost_so_far = self.dijkstra_search()
         self.path = result
-        print "Result path and cost"
+        print "Result path as seen on graph:"
         print result
+        print "Cost for traversing the graph"
         print cost_so_far
+
+        # Redrawing maze for 
         for key, value in self.edges.iteritems():
             if value:
                 maze.drawLines(key, value, "white")
@@ -104,6 +107,7 @@ class Graph:
         self.robot.robot_y = self.end.y
         maze.drawResult(result[0], result, "green")
         maze.show_robot(self.robot)
+        # Resetting original robot location for Part II
         self.robot.robot_x = x_temp
         self.robot.robot_y = y_temp
         exitonclick()

@@ -1,10 +1,5 @@
-##
-# Obstacle classa
-# pmw2125, as4916
-##
-
 from visibility_graph import *
-from follow_path import *
+#from follow_path import *
 from point import Point
 import math
 import sys
