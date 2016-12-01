@@ -97,10 +97,14 @@ class Graph:
                 maze.drawLines(key, value, "white")
         maze.draw()
         maze.show_robot(self.robot)
+        x_temp = self.robot.robot_x
+        y_temp = self.robot.robot_y
         self.robot.robot_x = self.end.x
         self.robot.robot_y = self.end.y
         maze.drawResult(result[0], result, "green")
         maze.show_robot(self.robot)
+        self.robot.robot_x = x_temp
+        self.robot.robot_y = y_temp
         exitonclick()
 
     # Check for point visibilitys
