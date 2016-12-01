@@ -7,6 +7,7 @@ from visibility_graph import *
 from follow_path import *
 from point import Point
 import math
+import sys
 
 ROBOT_SIZE = 23
 ROBOT_START_ORIENTATION = 90
@@ -158,7 +159,8 @@ class Robot:
 
 def initialize_world():
     global obstacles
-    obstacles = [obstacle.rstrip('\n') for obstacle in open('obstacles.txt')]
+    filename = str(sys.argv[1])
+    obstacles = [obstacle.rstrip('\n') for obstacle in open(filename)]
     global world_x
     global world_y
     global goal_x
