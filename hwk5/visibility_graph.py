@@ -28,7 +28,7 @@ class Graph:
         self.start = start
         self.end = end
         self.robot = robot
-
+        self.path = []
     def neighbors(self, id):
         return self.edges[id]
 
@@ -88,6 +88,7 @@ class Graph:
         for key,value in self.edges.iteritems():
             print str(key)+':\n'+str(value)
         result, cost_so_far = self.dijkstra_search()
+        self.path = result
         print "Result path and cost"
         print result
         print cost_so_far

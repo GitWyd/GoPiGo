@@ -7,6 +7,7 @@ from visibility_graph import *
 import math
 
 ROBOT_SIZE = 23
+ROBOT_START_ORIENTATION = 90
 obstacle_list = []
 world_x = 0.0
 world_y = 0.0
@@ -280,4 +281,5 @@ if __name__ == '__main__':
     grow_obstacles()
     g = Graph(obstacle_list, Point(robot.robot_x, robot.robot_y), Point(goal_x, goal_y), robot)
     g.make_edges()
+    follow_obstacle(g.path, Point(robot.robot_x, robot.robot_y), ROBOT_START_ORIENTATION)
 
