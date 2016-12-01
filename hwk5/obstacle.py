@@ -68,9 +68,6 @@ class Obstacle:
 
         def grow_obstacles(self):
                 global robot
-                robot.translate_to_origin()
-                robot.reflect_along_x()
-                robot.reflect_along_y()
                 self.hull_vertices.extend(self.vertices)
                 for vertex in self.vertices:
                         hull_vertices = robot.translate_to_vertex(vertex)
@@ -262,6 +259,9 @@ def initialize_world():
 
 def grow_obstacles():
     counter = 1
+    robot.translate_to_origin()
+    robot.reflect_along_x()
+    robot.reflect_along_y()
     for obstacle in obstacle_list:
         print 'obstacle ' + str(counter)
         obstacle.grow_obstacles()
