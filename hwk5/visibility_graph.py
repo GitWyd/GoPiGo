@@ -78,29 +78,39 @@ class Graph:
 
         maze = Maze(240, 420, self.obstacles)
         maze.draw()
+        maze.drawPoints(self.start, self.end)
         maze.show_robot(self.robot)
         time.sleep(0.5)
+        print "The Graph created"
         for key, value in self.edges.iteritems():
             if value:
                 maze.drawLines(key, value)
-                time.sleep(0.5)
+                time.sleep(1)
 
         for key,value in self.edges.iteritems():
             print str(key)+':\n'+str(value)
         result, cost_so_far = self.dijkstra_search()
         self.path = result
-        print "Result path and cost"
+        print "Result path as seen on graph:"
         print result
+        print "Cost for traversing the graph"
         print cost_so_far
+
+        # Redrawing maze for 
         for key, value in self.edges.iteritems():
             if value:
                 maze.drawLines(key, value, "white")
         maze.draw()
         maze.show_robot(self.robot)
+        x_temp = self.robot.robot_x
+        y_temp = self.robot.robot_y
         self.robot.robot_x = self.end.x
         self.robot.robot_y = self.end.y
         maze.drawResult(result[0], result, "green")
         maze.show_robot(self.robot)
+        # Resetting original robot location for Part II
+        self.robot.robot_x = x_temp
+        self.robot.robot_y = y_temp
         exitonclick()
 
     # Check for point visibilitys
@@ -120,9 +130,11 @@ class Graph:
                         return False
         
         return True
+    def chebyshev(self, coord1, coord2):
+        return abs(coord1.x - coord2.x) + abs(coord1.y - coord2.y)
 
     def manhattan(self, coord1, coord2):
-        return abs(coord1.x - coord2.x) + abs(coord1.y - coord2.y)
+        return max(abs(coord1.x - coord2.x),abs(coord1.y - coord2.y))
 
     def l2(self, coord1, coord2):
         return sqrt( (coord1.x - coord2.x) ** 2 + (coord1.y - coord2.y) ** 2 )
@@ -190,18 +202,14 @@ class Graph:
             if current in closed_set:
                 continue
             closed_set.add(current)
-            print "Current"
-            print current
-            print "Neighbours"
-            print self.neighbors(current)
             for next in self.neighbors(current):
                 if next not in closed_set:
 
-                    new_cost = cost_so_far[current] + self.l2(current, next)
+                    new_cost = cost_so_far[current] + self.manhattan(current, next)
 
                     if new_cost < cost_so_far[next]:
                         cost_so_far[next] = new_cost
-                        priority = new_cost + self.l2(self.end, next)
+                        priority = new_cost + self.manhattan(self.end, next)
                         frontier.put((priority, next))
                         came_from[next] = current
 
