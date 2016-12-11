@@ -1,7 +1,8 @@
 import sys, random, math
 from math import sqrt,cos,sin,atan2
 from point import Point
-
+from draw_world import *
+from turtle import *
 #global variables
 world_x = 600
 world_y = 600
@@ -119,7 +120,7 @@ def find_closest_node(nodes, random_pt):
             closest_pt = node
     return closest_pt
 
-def rrt(distance, forward):
+def rrt(distance, forward, maze):
     nodes = []
 
     if forward:
@@ -133,19 +134,20 @@ def rrt(distance, forward):
         next_node = grow_from_towards(closest_node, random_pt, distance)
         if is_visible(closest_node, next_node):
             print 'adding this node now ' + str(next_node[0]) + str(next_node[1]) 
+            maze.drawLine(closest_node, next_node)
             nodes.append(next_node)
     return nodes
 
 def merge_rrts(forward_nodes, reverse_nodes):
     for i in range(max_retries):
         random_pt = (random.random() * world_x, random.random() * world_y)
-        closest_forward_node = find_closest_node(nodes, random_pt)
-        next_forward_node = grow_from_towards(closest_node, random_pt, distance)
+        closest_forward_node = find_closest_node(forward_nodes, random_pt)
+        next_forward_node = grow_from_towards(closest_forward_node, random_pt, distance)
         closest_reverse_node = find_closest_node(reverse_nodes, next_forward_node)
-        next_backward_node = grow_from_towards(closest_reverse_node, next_forward_node, distance)
-        if next_backward_node == next_forward_node:
+        next_reverse_node = grow_from_towards(closest_reverse_node, next_forward_node, distance)
+        if next_reverse_node == next_forward_node:
             forward_nodes.append(next_forward_node)
-            return (forward_nodes, backward_nodes)
+            return (forward_nodes, reverse_nodes)
         temp = forward_nodes
         forward_nodes = reverse_nodes
         reverse_nodes = temp
@@ -153,7 +155,16 @@ def merge_rrts(forward_nodes, reverse_nodes):
 if __name__ == '__main__':
     distance = float(sys.argv[1])
     initialize_world()
-    forward_nodes = rrt(distance, True)
-    reverse_nodes = rrt(distance, False)   
+
+    maze = Maze(world_x, world_y, obstacles)
+    maze.draw()
+    maze.drawPoints(start, goal)
+    time.sleep(0.5)
+
+    forward_nodes = rrt(distance, True, maze)
+    reverse_nodes = rrt(distance, False, maze)
+
     merge_rrts(forward_nodes, reverse_nodes)
+
+    exitonclick()
 
