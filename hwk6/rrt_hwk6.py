@@ -22,7 +22,6 @@ class Line:
         self.coord_two = point_two
 
     def find_intersection(self, line2):
-
         return self.coord_one.ccw(line2.coord_one,line2.coord_two)!=self.coord_two.ccw(line2.coord_one, line2.coord_two) \
                and self.coord_one.ccw(self.coord_two,line2.coord_one)!=self.coord_one.ccw(self.coord_two, line2.coord_two)
 
@@ -43,12 +42,12 @@ def det(a, b):
 
 class Obstacle:
     def __init__(self):
-	self.vertices = []
+    self.vertices = []
         self.boundaries = []
-	
+    
     def add_vertex(self, x, y):
-	pt = Point(x, y)
-	self.vertices.append(pt)	
+    pt = Point(x, y)
+    self.vertices.append(pt)    
 
     def make_boundaries(self):
         vertices = self.vertices
