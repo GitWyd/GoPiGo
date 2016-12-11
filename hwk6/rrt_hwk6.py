@@ -142,14 +142,13 @@ def rrt(distance, forward, maze):
 def merge_rrts(forward_nodes, reverse_nodes):
     for i in range(max_retries):
         random_pt = (random.random() * world_x, random.random() * world_y)
-        closest_forward_node = find_closest_node(nodes, random_pt)
-        next_forward_node = grow_from_towards(closest_node, random_pt, distance)
-
+        closest_forward_node = find_closest_node(forward_nodes, random_pt)
+        next_forward_node = grow_from_towards(closest_forward_node, random_pt, distance)
         closest_reverse_node = find_closest_node(reverse_nodes, next_forward_node)
-        next_backward_node = grow_from_towards(closest_reverse_node, next_forward_node, distance)
-        if next_backward_node == next_forward_node:
+        next_reverse_node = grow_from_towards(closest_reverse_node, next_forward_node, distance)
+        if next_reverse_node == next_forward_node:
             forward_nodes.append(next_forward_node)
-            return (forward_nodes, backward_nodes)
+            return (forward_nodes, reverse_nodes)
         temp = forward_nodes
         forward_nodes = reverse_nodes
         reverse_nodes = temp
