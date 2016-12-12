@@ -60,18 +60,8 @@ class Node:
     def get_path(self,path):
         path.append(self)
         if (self.get_parent()):
-            return self.get_parent().get_path(path)
+            path = self.get_parent().get_path(path)
         return path
-    def whose_my_daddy(nodes):
-        child = nodes[0]
-        parent = Null
-        for i in range(1,len(nodes)):
-            parent = nodes[i]
-            child.set_parent(parent)
-            child = parent
-        # set parent of last node to None
-        child = None
-
 
 class Obstacle:
     def __init__(self):
@@ -181,6 +171,17 @@ def nodes_2_points(list):
     for i in list:
         tmp.append(i.pt)
     return tmp
+# reverse child/parent relationship
+def whose_my_daddy(nodes):
+    child = nodes[0]
+    parent = None
+    for i in range(1,len(nodes)):
+        parent = nodes[i]
+        child.set_parent(parent)
+        child = parent
+    # set parent of last node to None
+    child = None
+
 # takes two points as arguments and return the next Node to grow towards
 def grow_from_towards(closest_node, rnd_node, distance):
     if closest_node.dist(rnd_node) < distance:
@@ -251,14 +252,17 @@ def merge_rrts(forward_nodes, reverse_nodes):
 
         if next_reverse_node.tolerant_equal(next_forward_node, MATCH_TOLERANCE):
             next_forward_node.set_parent(closest_forward_node)
+            forward_nodes.append(next_forward_node)
 
             # get forward path start to connection node
-            forward_nodes.append(next_forward_node)
-            fwd_path = next_forward_node.get_path()
-            fwd_path.whose_my_daddy()
-            fwd_path = fwd_path.reverse()
+            tmp = []
+            next_forward_node.get_path(tmp)
+            whose_my_daddy(tmp)
+            tmp.reverse()
+            fwd_path = tmp
             # get reverse path closest_reverse_node to goal
-            rev_path = closest_reverse_node.get_path()
+            rev_path = []
+            closest_reverse_node.get_path(rev_path)
             # join paths
             fwd_path[-1].set_parent=rev_path[0]
             path = fwd_path + rev_path
@@ -280,7 +284,7 @@ if __name__ == '__main__':
     reverse_nodes = rrt(distance, False, maze)
 
     path = merge_rrts(forward_nodes, reverse_nodes)
-
+    print path
     #draw(path)
 
     exitonclick()
