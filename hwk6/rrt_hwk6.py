@@ -263,6 +263,7 @@ def merge_rrts(forward_nodes, reverse_nodes):
             # get reverse path closest_reverse_node to goal
             rev_path = []
             closest_reverse_node.get_path(rev_path)
+
             # join paths
             fwd_path[-1].set_parent=rev_path[0]
             path = fwd_path + rev_path
@@ -284,8 +285,7 @@ if __name__ == '__main__':
     reverse_nodes = rrt(distance, False, maze)
 
     path = merge_rrts(forward_nodes, reverse_nodes)
-    print path
-    #draw(path)
+    maze.drawResult(path[0], path)
 
     exitonclick()
 
