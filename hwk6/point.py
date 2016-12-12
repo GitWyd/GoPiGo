@@ -64,7 +64,7 @@ class Point:
         self.set_x(self.x * -1)
         return self
     def get_angle_to(self, other):
-        return atan2(self.y - other.y, self.x - other.x)
+        return atan2(other.y - self.y, other.x - self.x)
     # get point distance away from self in direction theta
     def get_pt_in_direction(self, theta, distance):
         return Point(self.x + distance * cos(theta), self.y + distance * sin(theta))

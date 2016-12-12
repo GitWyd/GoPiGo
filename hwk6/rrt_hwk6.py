@@ -4,7 +4,8 @@ from point import Point
 from draw_world import *
 from turtle import *
 #global variables
-BIAS = 0.75
+BIAS = 0
+MATCH_TOLERANCE = 0.5
 world_x = 600
 world_y = 600
 obstalces = []
@@ -135,7 +136,39 @@ def initialize_world():
         counter += num_vertices + 1
         obstacle.make_boundaries()
         obstacles.append(obstacle)
-
+    # add the bounderies around world
+    ## bottom border
+    obstacle = Obstacle()
+    obstacle.add_vertex(0,0)
+    obstacle.add_vertex(world_x,0)
+    obstacle.add_vertex(world_x,-1)
+    obstacle.add_vertex(0,-1)
+    obstacle.make_boundaries()
+    obstacles.append(obstacle)
+    ## top border
+    obstacle = Obstacle()
+    obstacle.add_vertex(0,world_y)
+    obstacle.add_vertex(world_x,world_y)
+    obstacle.add_vertex(world_x,world_y+1)
+    obstacle.add_vertex(0,world_y+1)
+    obstacle.make_boundaries()
+    obstacles.append(obstacle)
+    # right border
+    obstacle = Obstacle()
+    obstacle.add_vertex(world_x,world_y)
+    obstacle.add_vertex(world_x+1,world_y)
+    obstacle.add_vertex(world_x+1,0)
+    obstacle.add_vertex(world_x,0)
+    obstacle.make_boundaries()
+    obstacles.append(obstacle)
+    # left border
+    obstacle = Obstacle()
+    obstacle.add_vertex(0,world_y)
+    obstacle.add_vertex(-1,world_y)
+    obstacle.add_vertex(-1,0)
+    obstacle.add_vertex(0,0)
+    obstacle.make_boundaries()
+    obstacles.append(obstacle)
 # def dist(p1, p2):
 #     return sqrt((p1[0] - p2[0])**2 + (p1[1] - p2[1])**2) 
 
@@ -163,11 +196,13 @@ def find_closest_node(nodes, rnd_node):
 
 def rrt(distance, forward, maze):
     nodes = []
-
+    color = None
     if forward:
         nodes.append(Node(Point(start[0], start[1]),None))
+        color = "green"
     else:
         nodes.append(Node(Point(goal[0], goal[1]),None))
+        color = "red"
 
     for i in range(max_nodes):
         #random_pt = Point(random.random() * world_x, random.random() * world_y)
@@ -182,11 +217,11 @@ def rrt(distance, forward, maze):
         closest_node = find_closest_node(nodes, rnd_node)
         next_node = grow_from_towards(closest_node, rnd_node, distance)
 
-        print 'adding this node now ' + str(next_node.pt)
+        #print 'adding this node now ' + str(next_node.pt)
         if is_visible(closest_node.pt, next_node.pt):
             #print(Point(random.random() * world_x, random.random() * world_y))
             #print 'adding this node now ' + str(next_node.pt.x) +','+ str(next_node.pt.y)
-            maze.drawLine(closest_node.pt.to_tuple(), next_node.pt.to_tuple())
+            maze.drawLine(closest_node.pt.to_tuple(), next_node.pt.to_tuple(), color)
             # set parent node for trace back
             next_node.set_parent(closest_node)
             nodes.append(next_node)
@@ -208,8 +243,8 @@ def merge_rrts(forward_nodes, reverse_nodes):
         if not is_visible(closest_reverse_node.pt, next_reverse_node.pt):
             continue # if the node is not visible try again
 
-        if next_reverse_node == next_forward_node:
-            next_forward_node.setParent(closest_forward_node)
+        if next_reverse_node.tolerant_equal(next_forward_node, MATCH_TOLERANCE):
+            next_forward_node.set_parent(closest_forward_node)
 
             # get forward path start to connection node
             forward_nodes.append(next_forward_node)
