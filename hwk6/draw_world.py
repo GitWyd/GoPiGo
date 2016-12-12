@@ -61,6 +61,25 @@ class Maze(object):
         turtle.penup()
         turtle.update()
 
+    def drawResult(self, start, points, lineColour="blue"):
+        turtle.penup()
+        turtle.pencolor(lineColour)
+        
+        x = start.x
+        y = start.y
+        turtle.goto(offset + x, offset + y)
+
+        # Use this to draw things on the screen
+        turtle.pendown()
+        for point in points:
+            dx = point.x
+            dy = point.y
+            turtle.goto(offset + dx, offset + dy)
+        
+        # Set this back when drawing done
+        turtle.penup()
+        turtle.update()
+
     def draw(self):
         turtle.tracer(50000, delay=0) 
         turtle.register_shape("dot", ((-1,-1), (-1,1), (1,1), (1,-1)))

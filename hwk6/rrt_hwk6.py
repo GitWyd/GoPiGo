@@ -248,11 +248,11 @@ def merge_rrts(forward_nodes, reverse_nodes):
 
             # get forward path start to connection node
             forward_nodes.append(next_forward_node)
-            fwd_path = next_forward_node.get_path()
+            fwd_path = next_forward_node.get_path([])
             fwd_path.whose_my_daddy()
             fwd_path = fwd_path.reverse()
             # get reverse path closest_reverse_node to goal
-            rev_path = closest_reverse_node.get_path()
+            rev_path = closest_reverse_node.get_path([])
             # join paths
             fwd_path[-1].set_parent=rev_path[0]
             path = fwd_path + rev_path
@@ -275,7 +275,7 @@ if __name__ == '__main__':
 
     path = merge_rrts(forward_nodes, reverse_nodes)
 
-    #draw(path)
+    maze.drawResult(path[0], path)
 
     exitonclick()
 
