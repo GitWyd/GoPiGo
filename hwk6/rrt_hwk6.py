@@ -4,6 +4,7 @@ from point import Point
 from draw_world import *
 from turtle import *
 #global variables
+BIAS = 0.75
 world_x = 600
 world_y = 600
 obstalces = []
@@ -159,6 +160,7 @@ def find_closest_node(nodes, rnd_node):
         if node.dist(rnd_node) < closest_pt.dist(rnd_node):
             closest_pt = node
     return closest_pt
+
 def rrt(distance, forward, maze):
     nodes = []
 
@@ -169,11 +171,18 @@ def rrt(distance, forward, maze):
 
     for i in range(max_nodes):
         #random_pt = Point(random.random() * world_x, random.random() * world_y)
-        rnd_node = Node(Point().random(world_x, world_y), None)
         #rnd_node = Node(random_pt, None)
+        rnd_node = None
+
+        # rnd_node with bias towards goal or start
+        if forward:
+            rnd_node = Node(Point().random(world_x, world_y, goal, BIAS), None)
+        else:
+            rnd_node = Node(Point().random(world_x, world_y, start, BIAS), None)
         closest_node = find_closest_node(nodes, rnd_node)
         next_node = grow_from_towards(closest_node, rnd_node, distance)
-        print 'adding this node now ' + str(next_node.pt.x) +','+ str(next_node.pt.y)
+
+        print 'adding this node now ' + str(next_node.pt)
         if is_visible(closest_node.pt, next_node.pt):
             #print(Point(random.random() * world_x, random.random() * world_y))
             #print 'adding this node now ' + str(next_node.pt.x) +','+ str(next_node.pt.y)
@@ -187,10 +196,10 @@ def merge_rrts(forward_nodes, reverse_nodes):
     for i in range(max_retries):
         #random_pt = Point(random.random() * world_x, random.random() * world_y)
         # find next forward Node
-        rnd_node = Node(Point().random(world_x, world_y), None)
+        rnd_node = Node(Point().random(world_x, world_y, goal, BIAS), None)
         #rnd_node = Node(random_pt, None)
-        closest_forward_node = find_closest_node(forward_nodes, random_pt) 
-        next_forward_node = grow_from_towards(closest_forward_node, random_pt, distance)
+        closest_forward_node = find_closest_node(forward_nodes, rnd_node) 
+        next_forward_node = grow_from_towards(closest_forward_node, rnd_node, distance)
         if not is_visible(closest_forward_node.pt, next_forward_node.pt):
             continue # if the node is not visible try again
         # find next reverse Node
