@@ -175,6 +175,12 @@ def initialize_world():
 # def det(a, b):
 #     return a[0] * b[1] - a[1] * b[0]
 
+# converts a path of nodes into points
+def nodes_2_points(list):
+    tmp = []
+    for i in list:
+        tmp.append(i.pt)
+    return tmp
 # takes two points as arguments and return the next Node to grow towards
 def grow_from_towards(closest_node, rnd_node, distance):
     if closest_node.dist(rnd_node) < distance:
@@ -256,7 +262,7 @@ def merge_rrts(forward_nodes, reverse_nodes):
             # join paths
             fwd_path[-1].set_parent=rev_path[0]
             path = fwd_path + rev_path
-            return path
+            return nodes_2_points(path)
         temp = forward_nodes
         forward_nodes = reverse_nodes
         reverse_nodes = temp
