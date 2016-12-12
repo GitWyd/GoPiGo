@@ -1,3 +1,6 @@
+import random
+from math import sqrt, atan2, cos, sin
+
 class Point:
     def __init__(self, x=None, y=None):
         self.x = x
@@ -26,14 +29,16 @@ class Point:
         if det > 0:
                 return False
         # for points that lie on same line, tiebrake by choosing the one closer to the center
-        dist1 = (a.x-c.x)**2 + (a.y-c.y)**2
-        dist2 = (b.x-c.x)**2 + (b.y-c.y)**2
+        dist1 = a.dist_to(c) #(a.x-c.x)**2 + (a.y-c.y)**2
+        dist2 = b.dist_to(c) #(b.x-c.x)**2 + (b.y-c.y)**2
  #       if (a.x == b.x):
  #          return dist1 > dist2
  #       elif (a.y == b.y):
  #           return dist1 < dist2
         return dist1 > dist2
- 
+    def random(self, x_scalar, y_scalar):
+        self = Point(random.random() * x_scalar, random.random() * y_scalar)
+        return self 
     def __radd__(self, other):
             return Point(self.x+other.x,self.y+other.y)
 
@@ -61,11 +66,20 @@ class Point:
     def reflect_y(self):
         self.set_x(self.x * -1)
         return self
+    def get_angle_to(self, other):
+        return atan2(self.y - other.y, self.x - other.x)
+    # get point distance away from self in direction theta
+    def get_pt_in_direction(self, theta, distance):
+        return Point(self.x + distance * cos(theta), self.y + distance * sin(theta))
+    def to_tuple(self):
+        return (self.x,self.y)
     def dist_to(self,other):
         return sqrt((self.x-other.x)**2+(self.y-other.y)**2)
     def __eq__(self, other):
         return self.__dict__ == other.__dict__
-
+    def tolerant_equal(self, other, threshold):
+        return True if self.dist_to(other)<threshold else False
+        #value = b if a > 10 else c
     def __hash__(self):
         return hash(self.x) ^ hash(self.y)
 
