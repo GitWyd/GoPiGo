@@ -286,6 +286,8 @@ if __name__ == '__main__':
 
     path = merge_rrts(forward_nodes, reverse_nodes)
     maze.drawResult(path[0], path)
+    dist = len(path) * distance
+    print 'Distance of path is ' + str(dist)
 
     exitonclick()
 
