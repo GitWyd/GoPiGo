@@ -6,7 +6,7 @@ ______________
 
 You can invoke the program by running:
 
-python rrt_hwk6.py <<STEP_SIZE>>
+python rrt_hwk6.py <<size>>
 
 python rrt_hwk6.py 40
 
